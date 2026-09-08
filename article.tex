@@ -88,7 +88,7 @@
 
 \title{Item screening in graphical Rasch models. A tutorial}
 \author{Sebastian Kvist, Karl Bang Christensen \& Andreas Kryger Jensen}
-
+\afilliation{Biostat}
 \date{\today}
 
 \begin{document}
@@ -1119,13 +1119,12 @@ We clearly see from the graph above, that the LD connections still available are
 
 
 \section{Data Example}
-We will now put the package to use on a shoulder pain and disability (SPADI) questionnaire dataset, provided by \cite{christensen-2018}. 
 
 \subsection{Step 0: Getting Started}
 The screening procedure does not contain a Step $0$ explicitly, but naturally it is expected that the statistician gets familiar with the data at hand and potentially pre-processes it before any screening and/or analysis is performed.
 
 
-The dataset contains observations from participants answering a questionnaire with $13$ questions in total, five concerning pain and eight concerning disabilities. All items are scored on the discrete scale, $(0,1,2,3,4,5,6,7,8,9,10)$, with a higher number indicating a higher level of pain or disability associated with the given item. Beyond the item scores two exogenous variables ``gender'' and ``above60'' are present. The total number of observations available is $229$. From the $229$ observations, $213$ are complete with respect to item responses. The empirical distribution of missing values for the two exogenous variables, in the subset of complete item responses, is $0$ for both. Hence, we will be working with the entire $213$ cases throughout the screening. As per \cite{christensen-et-al-2019}, we will be splitting the dataset and treating the two sub-scales, pain and disability, as two different questionnaires, while also adhering to the proposal by \cite{jerosch-herold-et-al-2018}, that we should map the possible scores from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. We will therefore move forward with two datasets, a $213\times 7$ pain questionnaire and a $213\times 10$ disability questionnaire. 
+The dataset contains observations from participants answering a questionnaire with $13$ questions in total, five concerning pain and eight concerning disabilities. All items are scored on the discrete scale, $(0,1,2,3,4,5,6,7,8,9,10)$, with a higher number indicating a higher level of pain or disability associated with the given item. Beyond the item scores two exogenous variables ``gender'' and ``above60'' are present. The total number of observations available is $229$. From the $229$ observations, $213$ are complete with respect to item responses. The empirical distribution of missing values for the two exogenous variables, in the subset of complete item responses, is $0$ for both. Hence, we will be working with the entire $213$ cases throughout the screening. As per \cite{christensen-et-al-2019}, we will be splitting the dataset and treating the two sub-scales, pain and disability, as two different questionnaires, while also adhering to the proposal that we should map the possible scores from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. We will therefore move forward with two datasets, a $213\times 7$ pain questionnaire and a $213\times 10$ disability questionnaire. 
 
 
 \subsection{Step 1}
