@@ -4,7 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{algorithm}
-\usepackage{algpseudocode}
+\usepackage[noend]{algpseudocode}
 \usepackage{caption}
 
 \makeatletter
@@ -31,34 +31,18 @@
 
 \usepackage[title]{appendix}
 
-\usepackage{hyperref}
-\usepackage{lipsum}
-\usepackage{hyperref}
-
 \usepackage[most]{tcolorbox}
-\newtcolorbox{mybox}{colback=green!30!white,colframe=green!30!white}
 \newtcolorbox{mybox2}{colback=cyan!30!white,colframe=cyan!30!white}
 \newtcolorbox{mybox3}{
   breakable,
   colback=black!10!white,
   colframe=black!10!white
 }
-\newtcolorbox{mybox4}{colback=red!25!white,colframe=red!25!white}
 
 \usepackage{booktabs}
-\usepackage{array}
-\usepackage{graphicx}
-\usepackage{stackengine}
-\usepackage{verbatim}
-\usepackage{algorithmicx}
-\usepackage{booktabs}
-\usepackage{natbib}
-\usepackage[nottoc]{tocbibind}
+\usepackage[round,authoryear]{natbib}
 \bibliographystyle{apalike}
-\usepackage{url}
 
-\usepackage{forest}
-\usepackage{adjustbox}
 \usepackage{tikz}
 \usetikzlibrary{positioning}
 \tikzset{
@@ -70,67 +54,19 @@
   kept/.style={thick,blue}
 }
 
-% \tikzset{
-%   nodecircle/.style={
-%     circle, draw, minimum size=8mm, inner sep=0pt, font=\small
-%   },
-%   measurement/.style={->, thick, -{Latex[length=2mm]}},
-%   scoreassoc/.style={->, thick, dashed, -{Latex[length=2mm]}},
-%   ld/.style={thick, blue},
-%   moral/.style={thin, gray!55},
-%   scoreitem/.style={thick, dotted},
-%   moralparent/.style={thick, dashed}
-% }
-
-\usepackage{natbib}
-\usepackage[noend]{algpseudocode}
 \usepackage{amsmath}
-\usepackage{enumitem}
 \usepackage{amssymb}
-\usepackage{amsfonts}
 \usepackage{amsthm}
-\usepackage{soul}
 
 \def\s{\ensuremath\sigma}
 \def\b{\ensuremath\beta}
 \def\t{\ensuremath\theta}
 \def\l{\ensuremath\lambda}
 
-
-%\newtheorem{examplee}{Example: drunk walk}
-%\newtheorem{exampleee}{Example: drunk walk continued}
-\usepackage{tikz}        % For drawing the custom end symbol
-\usepackage{xparse}      % For more flexible commands
-
-% Define the hollow symbol (circle or diamond)
+% Define the hollow circle used to mark the end of an Example
 \newcommand{\exampleend}{\hfill\tikz\draw (0,0) circle (1.2pt);}
-\newcommand{\definitionend}{\hfill\tikz\draw (0,0) -- (1ex,0.6ex) --(2ex,0) -- (1ex,-0.6ex) -- cycle;}
-% You can use this instead if you prefer a diamond:
-% \newcommand{\exampleend}{\hfill\tikz\draw (0,0) -- (1ex,0.6ex) -- (2ex,0) -- (1ex,-0.6ex) -- cycle;}
-\newcommand{\theoremend}{\hfill\tikz\draw (0,0) -- (1ex,0.6ex) --(2ex,0) -- (1ex,-0.6ex) -- cycle;}
 
-% Define the Example environment
 \newtheoremstyle{examplestyle}
-  {10pt}    % Space above
-  {10pt}    % Space below
-  {\normalfont}  % Body font
-  {}        % Indent amount
-  {\bfseries}   % Theorem head font
-  {.}       % Punctuation after theorem head
-  {1em}     % Space after theorem head
-  {}        % Theorem head spec (can be left empty, meaning 'normal')
-
-\newtheoremstyle{defstyle}
-  {10pt}    % Space above
-  {10pt}    % Space below
-  {\normalfont}  % Body font
-  {}        % Indent amount
-  {\bfseries}   % Theorem head font
-  {.}       % Punctuation after theorem head
-  {1em}     % Space after theorem head
-  {}        % Theorem head spec (can be left empty, meaning 'normal')
-
-\newtheoremstyle{thmstyle}
   {10pt}    % Space above
   {10pt}    % Space below
   {\normalfont}  % Body font
@@ -143,37 +79,13 @@
 \theoremstyle{examplestyle}
 \newtheorem{example}{Example}[section]
 
-\theoremstyle{defstyle}
-\newtheorem{definition}{Definition}[section]
-
-\theoremstyle{thmstyle}
-\newtheorem{theorem}{Theorem}[section]
-
-% Now redefine the end of the environment to add the end symbol
 \usepackage{etoolbox}
 \AtEndEnvironment{example}{\exampleend}
-\AtEndEnvironment{definition}{\definitionend}
-\AtEndEnvironment{theorem}{\theoremend}
 
-%\usepackage{todonotes}
-\usepackage{multirow}
-\usepackage{subfig}
-\usepackage{pstricks-add}
-%\usepackage{auto-pst-pdf}
-\usepackage{bbm}
-\usepackage[final]{pdfpages}
-\usepackage{dsfont}
-\usepackage{wrapfig}
 \usepackage{float}
-\usepackage{fancyhdr}
-\usepackage{mathrsfs}
-\usepackage{minted}  % Code listing
-\usepackage{cleveref}  % For referencing equations
 
-\usepackage{fancyhdr}
-%\pagestyle{fancy}
-%\fancyhf{}
-\rfoot{Page \thepage \hspace{1pt} of \pageref{LastPage}}
+\usepackage[hidelinks]{hyperref}
+
 \title{Item screening in graphical Rasch models. A tutorial}
 \author{Sebastian Kvist, Karl Bang Christensen \& Andreas Kryger Jensen}
 
