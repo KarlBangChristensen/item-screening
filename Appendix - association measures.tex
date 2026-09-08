@@ -1,0 +1,16 @@
+\section*{Measure of Association}
+
+The Goodman and Kruskal \citeyearpar{goodman-kruskal-1954} $\gamma$ measures the association between two ordinal variables. After cross-tabulation it looks at pairs of observations, counting the total number of concordant pairs (pairs that are ranked the same way by the two variables) $C$, and the total number of discordant pairs (pairs that are ranked differently by the two variables) $D$. The value is
+
+\begin{equation}
+\gamma^{GK} = \frac{C-D}{C+D}.
+\end{equation}
+
+The partial $\gamma$ coefficient \cite{davis-1967} is computed this partial gamma, we will need to determine which variable we are controlling for, and hence conditioning on. Let's say we are testing for DIF between $Y_i$ and $X_j$, then we need to condition on the total score. So, the partial gamma coefficient is computed by first stratifying the data with respect to each unique value of the score. Let $n$ denote the total number of stratums, then for each strata we compute Goodman and Kruskal's gamma, while also storing the number of concordant and disconcordant paris that define each GK gamma, and we can compute the partial gamma coefficient as a weighted sum of the strata-specific GK gamma's. 
+\begin{align}
+    \hat{\gamma}_{Y_i\bot X_j\mid S} &= \sum_{i=1}^n w_i\gamma^{GK}_i = \sum_{i=1}^n\frac{(C_i+D_i)}{\sum_{i=1}^n(C_i+D_i)}\frac{C_i-D_i}{C_i+D_i} \\
+    &= \frac{\sum_{i=1}^n(C_i-D_i)}{\sum_{i=1}^n(C_i+D_i)} = \frac{\sum_{i=1}^nC_i-\sum_{i=1}^nD_i}{\sum_{i=1}^nC_i+\sum_{i=1}^nD_i}.
+\end{align}
+The weights, and hence the contribution per GK gamma, is the ratio between the sum of concordant and discordant pairs that defines the $i$th $\gamma^{GK}$, and the sum of all strata-specific concordant and discordant pairs. This allows the individual $\gamma^{GK}$ to contribute a weight towards the partial gamma that is proportional to the number of observations defining that $\gamma^{GK}$, \cite{agresti-1984}.  
+
+The core logic is the same behind both statistics, since we collect the number of concordant and discordant pairs and calculate the ratio between the difference and the sum. Hence, both entities lie in the closed set $[-1,1]$, and naturally the closer we observe the association measure to one of the two end-points the stronger the relationship \cite{agresti-1984}.
