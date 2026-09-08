@@ -89,7 +89,7 @@
 
 \title{Item screening in graphical Rasch models. A tutorial}
 \author{Sebastian Kvist, Karl Bang Christensen \& Andreas Kryger Jensen}
-\affil{Biostat}
+\affil{Section of Biostatistics, Department of Public Health, University of Copenhagen}
 \date{\today}
 
 \begin{document}
@@ -116,65 +116,31 @@ In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2
 
 The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \cite{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure. 
 
-\section{Methods}
+\subsection{Models for measurement}
 
-The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$, where $Y_i\in\{0,1,\ldots,M_i\}$. For ease of notation, we assume that $M_i=M$ for all items $i$, i.e.\ that all items have the same number of response options. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements 
-\begin{itemize}
-\item $\theta$ is uni-dimensional.
-\item Local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$.
-\item Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate
-\item $P(X_j=x|\theta)=\theta^x\gamma_x(\sum_{m=0}^M\theta^m\gamma_m)^{-1}$
-\end{itemize}
-The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing.
-
+The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$, where $Y_i\in\{0,1,\ldots,M_i\}$. For ease of notation, we assume that $M_i=M$ for all items $i$, i.e.\ that all items have the same number of response options. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$;
+(iii) Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
+$$
+P(Y_i=y|\theta)=\frac{\exp(y\theta+\alpha_{iy})}{\sum_{z=0}^M\exp(z\theta+\alpha_{iz})}
+$$
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing. 
 
 \subsubsection{Notation}
-Before diving deeper, let us get the notation straight. Let $Y_i$ denote a response to item $i$, and let $k$ specify the total number of items. $X_j$ denotes exogenous variable $j$, for which $m$ specifies the total number of covariates. For each participant, a total score can be computed as $S=\sum_{i=1}^k Y_i$, and we can also define a rest-score $R_i=S-Y_i=\left(\sum_{j=1}^kY_i\right)-Y_i = \sum_{j=1,j\neq i}^kY_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we can define a sub-score $S_B=\sum_{Y_i\in B}Y_i$. Lastly, as mentioned, $\theta$ denotes the unobserved trait, which dictates how a participant performs on the questionnaire \cite{kreiner-christensen-2011}. 
+For each participant total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-scores as $R_i=S-Y_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we define sub-scores $S_B=\sum_{Y_i\in B}Y_i$.
 
-\subsection{The Rasch Model}
+\subsubsection{The graphical Rasch Model}
 
-The Rasch model is the simplest IRT, used to analyze ordinal items where possible levels in an item response must have a natural order, which allows us to convert them into numbers and effectively work with discrete numerical item scores. Hence, the Rasch model can be applied on both dichotomous (binary) and polytomous (non-binary) item responses. Specifically, when working with polytomous items the Rasch model takes the form
+Combining the requirements (ii)-(iv) we can write the Rasch model in vector form
 \begin{align}
-    P(\mathbf{Y}=y\mid \Theta = \theta, \mathbf{X}=x) &= \exp\left(\alpha_0+\sum_{i=1}^k\theta y_i+\alpha_{iy_i}\right) 
-    \\ &= \exp\left(\alpha_0+\theta\sum_{i=1}^k y_i+\sum_{i=1}^k\alpha_{iy_i}\right) \\ &= \exp\left(\alpha_0+\theta S+\sum_{i=1}^k\alpha_{iy_i}\right) \label{eq:sufficient}
-    % P(Y_{iv}=y \mid \theta_v=\theta)=\frac{\exp(y\theta-\beta_{iy})}{\sum_{l=1}^m(l\theta+\beta_{il})}, \quad \text{for person }v.
+P(\boldsymbol{Y} = \boldsymbol{y} | \boldsymbol{X} = \boldsymbol{x}, \theta) =\exp\left(\alpha_0+\theta S+\sum_{i=1}^k\alpha_{iy_i}\right) \label{eq:sufficient}
 \end{align}
-Going back to the mathematics test example, a student with a high mathematical understanding is naturally more likely to score high on an item, especially if the difficulty of the item in question is low. 
+where 
+$$
+\alpha_0=-\log\left(\prod_{i=1}^k\sum_{z=0}^M\exp(z\theta+\alpha_{iz})\right)
+$$
+is a normalizing constant that does not depended on the observed data $(\boldsymbol{y},\boldsymbol{x})$. It is a consequence of (\ref{eq:sufficient}) that $S$ is sufficient for $\theta$. This is feature that makes the Rasch model stand out from other models for measurement. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
 
-As with any model, the Rasch model assumes the data satisfy certain criteria. Criteria which, if violated, force us to depart from standard Rasch modeling and venture into graphical log-linear Rasch models, which is introduced in the subsequent section.
-\begin{mybox2} 
-\textbf{Rasch's assumptions}
-\begin{enumerate}
-    \item Local independence between items.
-    \item There can be no differential item functioning (DIF).
-    \item $S$ is sufficient for $\theta$.
-\end{enumerate}
-\end{mybox2}
-(\cite{rasch-1960}, \cite{fischer-molenaar-1995})
-
-
-% \subsubsection{\textit{What is homogeneous data?}}
-% \textcolor{red}{Based on prior knowledge. }
-% Data is said to be homogeneous when data points overlap certain characteristics which allows us to treat them equally and hence analyze the entire data set as a whole. Returning to the motivating example in section 2.1 where the questionnaire is a math test; we want the students to have similar age, educational background 
-% etc. This assumption is crucial and further traditional analysis, or departure there from, of the data is meaningless if violated. 
-
-\subsubsection{\textit{Local Independence?}}
-
-When we say we need local independence between items, we mean exactly that. Well conditional local independence to be exact, as we assume any two items $Y_i$ and $Y_j$ to be independent given $\theta$, which means they should also be independent given the score. We condition on the rest-score, but since there exists a specific rest-score for each item, we test the hypothesis in both directions, i.e., $Y_i \bot Y_j \mid R_i$ and $Y_i \bot Y_j \mid R_j$ \cite{kreiner-christensen-2012}. Again returning to the math test example, if a correct answer to question three makes it easier to score higher on question four, then the two items are necessarily dependent, and we say the two items exhibit local dependency (LD), and the test designer must evaluate if this is the purpose of the situation. However, a violation of this assumption requires us to depart from classical Rasch model inference and turn to other models capable of handling this type of data structure (hint; the graphical log-linear Rasch model). It has been argued that models with this departure are still valid measurement models \cite{kreiner-2007}.
-
-
-\subsubsection{\textit{Differential Item Functioning?}}
-Differential item functioning (DIF) is a term describing the phenomenon when sub-grouping participants show different response patterns to the same item \cite{holland-wainer-2012}. Consider the math test example once more. If we assume the data is homogeneous, meaning all participants share comparable exogenous variables. Then, grouping the participants via school and realizing that participants from school $A$ excel in question $1$ and $3$ compared to those attending school $B$, we say that school is a DIF source to the two items $1$ and $3$, and vice versa, we say that item $1$ and $3$ exhibit DIF relative to the exogenous variable school. When testing for DIF we are interested in hypothesis of the form 
-\begin{equation}
-    H_0: X_j \bot Y_i \mid S, \quad \forall j=1,\dots,m,\quad i=1,\dots,k.
-\end{equation}
-If a hypothesis of this form is rejected between exogenous variable $X_j$ and item $Y_i$, we may conclude that item $i$ exhibit DIF w.r.t. $X_j$. What does this imply? If DIF is present, the standard Rasch model is violated since item responses are no longer explained by the latent trait, and we are once again forced to depart from standard Rasch models. 
-
-\subsubsection{\textit{\textbf{\textit{S}} is Sufficient for $\mathbf{\theta}$}}
-Under the Rasch model, it holds that the total score $S$, of an individual's test, is a sufficient statistic for the latent variable $\theta$. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$, which is clear from \eqref{eq:sufficient}. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
-
-\subsection{The Graphical Log-Linear Rasch Model}
-If the latter two assumptions of the Rasch model are violated, then we have, in other words, obtained evidence that we must look beyond the standard Rasch model. Hence we now introduce the graphical log-linear Rasch model (GLLRM). The GLLRM extends the Rasch model, quite literally, and allows inclusion of interaction terms between item pairs exhibiting LD and also between item and exogenous variable pairs which exhibit DIF. This leads to the following form for the GLLRM for polytomous items 
+The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this makes it easy to include (i) interaction terms between item pairs to model LD and (ii) to include interaction terms between item and exogenous variable pairs to model DIF DIF. This leads to the following form for the GLLRM for polytomous items 
 \begin{align}
     P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_i+\sum_{i=1}^{n_L}\lambda_i(u_i,v_i)\\+ \sum_{i=1}^{n_D}\delta_i(a_i,z_i)+\sum_{i=1}^{n_G}\mu_i(g_i)\Big),
 \end{align}
@@ -183,64 +149,9 @@ The G in GLLRM, which stands for graphical, refers to the simple fact that the m
 
 
 
-\subsection{Measure of Association}
-To determine whether we are actually able to reject the null hypothesis, we must agree on some sort of measure. A measure of association. This could be the Spearman or Pearson correlation statistic. However, in accordance with the primary article by \citet{kreiner-christensen-2011} we will restrict ourselves to work with the partial gamma coefficient, this has also been argued to work well by \cite{kreiner-christensen-2012}. The partial gamma coefficient is a natural extension of Goodman and Kruskal's gamma, which allows us to control for one or several variables. The core logic is the same behind both statistics, since we collect the number of concordant and discordant pairs and calculate the ratio between the difference and the sum. Hence, both entities lie in the closed set $[-1,1]$, and naturally the closer we observe the association measure to one of the two end-points the stronger the relationship \cite{agresti-1984}.
-
-\subsubsection{Goodman and Kruskal's Gamma}
-Goodman and Kruskal's gamma is a measure of association capable of informing how two ordinal variables associate to each other. It is based on comparing pairs of observations after cross-tabulating the data with respect to the two variables of interest. The total number of observations, which rank the same, are called concordant, denoted $C$, and the total number of observations, that rank differently, are called discordant, denoted $D$. Ties are discarded. Finally, Goodman and Kruskal's gamma is given as
-\begin{equation}
-    \gamma^{GK} = \frac{C-D}{C+D},
-\end{equation}
-\cite{davis-1967} and \cite{goodman-kruskal-1954}.
-\begin{mybox3}
-\begin{example}
-Suppose we are given a dataset, containing 150 observations where customers have answered the two questions:
-
-
-    \begin{centering}
-        Q1: How did you feel about the service experience? \\
-        A: Satisfied. \qquad B: Dissatisfied. \\
-        Q2: How likely are you to recommend the service to someone else?\\
-        A: Very likely. \qquad B: Very unlikely. \\ 
-    \end{centering}
-We want to determine the relationship between customer satisfaction and likelihood of recommending the rated service. After cross-tabulating the observations with respect to the two variables, we are left with the following table:
-    \begin{table}[H]
-        \centering
-        \begin{tabular}{|c|c|c|c|}
-             \hline 
-             Satisfaction level & Unlikely to recommend & Likely to recommend  \\
-             \hline 
-             Dissatisfied & 45 &  15 \\
-             \hline
-             Satisfied & 20 & 70 \\
-             \hline 
-        \end{tabular}
-        \label{tab:ex1}
-    \end{table}
-    Hence, we note the total number of concordant pairs is given as $C=45*70 = 3,150$, and the total number of discordant pairs is $D=15*20 = 300$. Thus, we get that 
-    \begin{equation*}
-        \gamma^{GK}=\frac{C-D}{C+D} = \frac{3,150-300}{3,150+300} = 0.826.
-    \end{equation*}
-    We may conclude that there is a strong positive association between customer satisfaction level and likelihood of recommending the service. Implying that customers satisfied with the service are likely to recommend it and vice versa.
-\end{example}    
-\end{mybox3}
-
-There is one shortcoming concerning Goodman and Kruskal's gamma, it is not directly applicable when we want to control for another variable or even a group of variables. Hence, we must equip ourselves accordingly for tests of conditional independence. 
-
-\paragraph{Partial gamma Coefficient.} In many of the situations where we need to report a measure of association, we will need to do so with respect to two variables, while controlling for one or several others. Hence, we need a stronger tool than Goodman and Kruskal's gamma. So we turn to \cite{davis-1967} who defined a partial gamma coefficient, which allows us to do exactly this. To compute this partial gamma, we will need to determine which variable we are controlling for, and hence conditioning on. Let's say we are testing for DIF between $Y_i$ and $X_j$, then we need to condition on the total score. So, the partial gamma coefficient is computed by first stratifying the data with respect to each unique value of the score. Let $n$ denote the total number of stratums, then for each strata we compute Goodman and Kruskal's gamma, while also storing the number of concordant and disconcordant paris that define each GK gamma, and we can compute the partial gamma coefficient as a weighted sum of the strata-specific GK gamma's. 
-\begin{align}
-    \hat{\gamma}_{Y_i\bot X_j\mid S} &= \sum_{i=1}^n w_i\gamma^{GK}_i = \sum_{i=1}^n\frac{(C_i+D_i)}{\sum_{i=1}^n(C_i+D_i)}\frac{C_i-D_i}{C_i+D_i} \\
-    &= \frac{\sum_{i=1}^n(C_i-D_i)}{\sum_{i=1}^n(C_i+D_i)} = \frac{\sum_{i=1}^nC_i-\sum_{i=1}^nD_i}{\sum_{i=1}^nC_i+\sum_{i=1}^nD_i}.
-\end{align}
-The weights, and hence the contribution per GK gamma, is the ratio between the sum of concordant and discordant pairs that defines the $i$th $\gamma^{GK}$, and the sum of all strata-specific concordant and discordant pairs. This allows the individual $\gamma^{GK}$ to contribute a weight towards the partial gamma that is proportional to the number of observations defining that $\gamma^{GK}$, \cite{agresti-1984}.  
 
 
 
-\subsection{The Multiple Testing Problem}
-When we perform the second step of the screening procedure (see table \ref{tab:item_screening_guide} in section \ref{sec:it_sec}) we are evaluating a lot of tests at once, which means the risk of false discovery rate (FDR) increases. This will need to be accounted for. 
-
-\subsubsection{The Benjamin-Hochberg Procedure}
-A method for controlling the FDR, when performing multiple hypothesis tests at once, is via the Benjamin-Hochberg procedure. This procedure adjusts the raw $p$-values to account for multiple testing, resulting in a more conservative set of accepted alternative hypotheses. The BH procedure is quite simple. Say we perform $T$ tests, the $T$ raw $p$-values are ranked in ascending order $p_1<p_2<\dots <p_T$. The BH $p$-adjusting method then proceeds to control the FDR at the level we determine the raw $p$-values significance level, $\alpha$, by finding the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and label all $p_i$ significant for $i=1,\dots,t$, \cite{benjamini-hochberg-1995}.
 
 
 \section{Item Screening}\label{sec:it_sec}
@@ -1453,12 +1364,13 @@ Future development could also focus on improving the integration between twigg a
 \newpage
 \begin{appendices}
 \section{}\label{sec:App1}
-\input{appendix}
+%\input{appendix}
+\input{Appendix - association measures}
 \end{appendices}
 
 \begin{appendices}
 \section{}\label{sec:AppB}
-\input{appendix_B}
+\input{Appendix - multiple testing}
 \end{appendices}
 
 

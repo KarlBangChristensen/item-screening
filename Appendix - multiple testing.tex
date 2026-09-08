@@ -1,0 +1,5 @@
+\subsection{The Multiple Testing Problem}
+When we perform the second step of the screening procedure (see table \ref{tab:item_screening_guide} in section \ref{sec:it_sec}) we are evaluating a lot of tests at once, which means the risk of false discovery rate (FDR) increases. This will need to be accounted for. 
+
+\subsubsection{The Benjamin-Hochberg Procedure}
+A method for controlling the FDR, when performing multiple hypothesis tests at once, is via the Benjamin-Hochberg procedure. This procedure adjusts the raw $p$-values to account for multiple testing, resulting in a more conservative set of accepted alternative hypotheses. The BH procedure is quite simple. Say we perform $T$ tests, the $T$ raw $p$-values are ranked in ascending order $p_1<p_2<\dots <p_T$. The BH $p$-adjusting method then proceeds to control the FDR at the level we determine the raw $p$-values significance level, $\alpha$, by finding the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and label all $p_i$ significant for $i=1,\dots,t$, \cite{benjamini-hochberg-1995}.
