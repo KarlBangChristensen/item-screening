@@ -140,13 +140,51 @@ $$
 $$
 is a normalizing constant that does not depended on the observed data $(\boldsymbol{y},\boldsymbol{x})$. It is a consequence of (\ref{eq:sufficient}) that $S$ is sufficient for $\theta$. This is feature that makes the Rasch model stand out from other models for measurement. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
 
+\subsubsection{Adding LD and DiF}
+
 The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this makes it easy to include (i) interaction terms between item pairs to model LD and (ii) to include interaction terms between item and exogenous variable pairs to model DIF DIF. This leads to the following form for the GLLRM for polytomous items 
 \begin{align}
     P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_i+\sum_{i=1}^{n_L}\lambda_i(u_i,v_i)\\+ \sum_{i=1}^{n_D}\delta_i(a_i,z_i)+\sum_{i=1}^{n_G}\mu_i(g_i)\Big),
 \end{align}
-where $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{kreiner-christensen-2011}. \\
-The G in GLLRM, which stands for graphical, refers to the simple fact that the model can be represented as a graph. In such a graph, variables are represented as nodes, and edges between item nodes represent LD, while edges between item and exogenous variable nodes represent discovered DIF. Hence, the associated graph with the GLLRM explicitly shows where the violations of the standard Rasch model is present. 
+where $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{kreiner-christensen-2011}. 
 
+\subsubsection{Representation as graph}
+
+The model can be represented as a graph where items and covariates are represented as nodes. Edges between item nodes represent LD, while edges between item and exogenous variable nodes represent DIF. 
+
+\begin{mybox3}
+\begin{example}
+Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(X_1,X_2), (X_3,X_4), (X_1,X_4)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
+
+\begin{center}
+\begin{tikzpicture}[node distance=0.9cm and 2.3cm]
+\node[nodecircle] (B) {$Y_2$};
+\node[nodecircle,below=of B, xshift=-2cm] (A) {$Y_1$};
+\node[nodecircle,below=of A] (D) {$Y_4$};
+\node[nodecircle,below=of D, xshift=2cm] (C) {$Y_3$};
+
+\node[nodecircle,right=of A, xshift=1cm,yshift=-0.5cm] (S) {$\theta$};
+
+\node[nodecircle,right=of S,yshift=-1cm] (X) {$X_1$};
+\node[nodecircle,right=of S,yshift=2cm] (Z) {$X_2$};
+
+\draw[ld] (A)--(B);
+\draw[ld] (A)--(D);
+
+\draw[dotted] (A)--(S);
+\draw[dotted] (B)--(S);
+\draw[dotted] (C)--(S);
+\draw[dotted] (D)--(S);
+
+\draw[scoreedge] (S)--(X);
+
+\draw[dif] (X)--(B);
+\draw[dif] (Z)--(B);
+
+\end{tikzpicture}
+\end{center}
+\end{example}
+\end{mybox3}
 
 
 
