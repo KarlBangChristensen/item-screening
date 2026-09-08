@@ -1,4 +1,4 @@
-\documentclass[a4project,12pt]{article}
+\documentclass[12pt]{article}
 \usepackage[english]{babel}
 \usepackage[a4paper, total={6in, 8in}]{geometry}
 \usepackage[utf8]{inputenc}
@@ -1006,7 +1006,7 @@ For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibit
             \hline  
             \end{tabular}
             \caption{Hypothetical tests to determine if DIF edges should be retained.}
-            \label{tab:step3_example_3b}
+            \label{tab:step6_dif_example}
         \end{table}
         Next, we check if the LD edges should be retained via the following procedure. Take the pair $(A,B)$, cut the edge between the two, and consider the LD connections still available from either one.
         % Temporary removal of LD edge (A,B)
@@ -1078,7 +1078,7 @@ We clearly see from the graph above, that the LD connections still available are
             \hline  
             \end{tabular}
             \caption{Hypothetical tests to determine if LD edges should be retained.}
-            \label{tab:step3_example_3b}
+            \label{tab:step6_ld_example}
         \end{table}
     Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(A,B)$ and $(A,D)$ are kept, while the edge between $(C,D)$ is removed. Thus, we are left with the final Step 6 graph below.
     \begin{center}
