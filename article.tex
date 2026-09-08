@@ -174,7 +174,7 @@
 %\pagestyle{fancy}
 %\fancyhf{}
 \rfoot{Page \thepage \hspace{1pt} of \pageref{LastPage}}
-\title{Item screening in Graphical Models. A tutorial}
+\title{Item screening in graphical Rasch models. A tutorial}
 \author{Sebastian Kvist, Karl Bang Christensen \& Andreas Kryger Jensen}
 
 \date{\today}
@@ -183,40 +183,37 @@
 
 \maketitle
 
-\tableofcontents
-
-
-
-\newpage  
 \begin{abstract}
 Rasch models are widely used to analyze questionnaire and test data. Inference based on the standard Rasch model is only valid when the data meet assumptions such as local independence and absence of differential item functioning. Graphical Rasch models provide a framework where local dependence and differential item functioning can be represented explicitly. In this context, "item screening" denotes a coherent workflow for testing for consistency, local dependence, differential item functioning, score-covariate associations, and graph-based model checking. This is done while taking spurious evidence into account. We present a non-technical introduction to the screening procedure and describe an implementation in R.
 \end{abstract}
 
-
-\newpage
-
 \section{Introduction}
 
-Questionnaires and tests are widely used to measure health, abilities, and experiences. This makes it essential to ensure that they produce reliable, meaningful, and fair results. This can be done by testing of the data meet the requirement of the Rasch \citeyearpar{rasch-1960}{} uChallenges arise when the data indicate that the assumptions is local dependence \cite[LD]{}
+Questionnaires and tests are widely used to measure health, abilities, and experiences. This makes it essential to ensure that they produce reliable, meaningful, and fair results. This can be done by evaluating whether observed data meet the requirements of the Rasch \citeyearpar{rasch-1960} model. A model that satisfies all formal psychometric criteria of the Rasch model can be considered the gold standard of measurement ensuring validity and objectivity.
 
-The items should only be correlated through the latent trait that the test is measuring \cite{lord-novick-1968}. This is generally referred to as local independence (Lazarsfeld & Henry, 1968).
+Among these are the assumptions that there is no local dependence \cite[LD]{lazarsfeld-henry-1968} and that there is no differential item functioning \cite[DIF]{holland-wainer-2012}.
 
-items are overly related to one another, or function differently across subgroups. Graphical Rasch models \cite{kreiner-christensen-2002,kreiner-christensen-2004} provide a framework for including item dependencies and differential item functioning. While graphical loglinear Rasch models do not fully satisfy all formal psychometric criteria of validity and objectivity, they can offer a realistic and practically useful representation of empirical data. Moreover, retaining all items may sometimes be preferable to removing items solely to achieve strict model conformity, as this helps preserve reliability and the breadth of information captured by an instrument. To support this process, we present an R package that provides a coherent workflow for item screening and model evaluation, including tools for identifying problematic items, assessing item dependencies and subgroup differences, and evaluating overall model fit. The package is demonstrated using the Shoulder Pain and Disability Index, where it is applied to the pain and disability subscales. By supporting systematic, transparent, and reproducible analyses, the package offers researchers a practical tool for improving the quality and credibility of questionnaire-based measurement.
+Briefly, local independence means that items are only correlated through the latent trait that the instrument measures \cite{lord-novick-1968} and DIF that repsondents from different groups who have the same level of the latent variable have different response distributions on an item.
 
-dependence. Before such a model can be used we need to identify where the explicit violations of the standard Rasch model are present. \cite{kreiner-christensen-2011} poses a stepwise screening procedure for exactly this. The procedure involves several stages, including checks of consistency, tests for local dependence and differential item functioning, elimination of spurious evidence, and graph-based checks of the resulting model structure. While several R packages exist for fitting Rasch and related item response models, the screening procedure itself is not currently available as one coherent implementation. As a result, researchers often have to combine several tools and manual steps, which can make the analysis less transparent and harder to reproduce.
+Graphical Rasch models \cite{kreiner-christensen-2002,kreiner-christensen-2004,kreiner-christensen-2007} provide a framework for including item dependencies and differential item functioning. This class of models does not satisfy all measurement requirements, but offers a realistic and practically useful representation of empirical data \cite{kreiner-2007}. 
 
-The purpose of this project is to develop an R package that can help with exactly this item screening procedure. The package will be called \texttt{twigg} which stands for "Testing Within Item set Grouping using Graphical models". While this report may stand alone, it also serves a purpose, to present the necessary theory and most importantly explain the decision made and how the screening procedure is implemented. The goal is not to remove the need for statistical judgment, but to provide a structured computational tool that makes the screening process easier to carry out, inspect, and document.
+Identifying explicit violations of the Rasch model requirements based on empirical data is essential. Each item pair can be tested for LD using several available methods \cite[pp. 179-80]{Christensen-et-al2017}. Similarly, several statistical tests exist that can evaluate of DIF for each combination of an item and a covariate \cite{zumbo-1999}.
 
-\section{Theoretical Background}
+In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2012} discuss two central testing approaches: conditional likelihood ratio tests \cite{Kelderman-1984} and a simple non-parametric test that does not require specialized Rasch software \cite[pp. 1250-1]{kreiner-christensen-2004}. These also apply to tests of DIF.
 
-\subsection{Item Response Theory}
-Item response theory (IRT) is a statistical model for data obtained through questionnaires or tests. The purpose is to model the relationship between a latent trait, denoted $\theta$, and item responses. The latent trait $\theta$ determines how well a participant performs on the test in question, and is the underlying quantity the questionnaire intends to measure.
-As an example, the questionnaire could be a mathematical test, the participating students, and the latent variable ability. Natural questions, after observing how students perform on the test, could be: Do kids from school $A$ generally perform better on question five than kids from school $B$? Does a correct answer to question three make it easier to get question four correct? Questions of this type are exactly what IRT tries to answer in multiple fields of study, including, but not limited to, psychometrics, educational testing, and health measurement. For an IRT model to be applicable certain assumptions need to be satisfied
+The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \cite{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure. 
+
+\section{Methods}
+
+The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$, where $Y_i\in\{0,1,\ldots,M_i\}$. For ease of notation, we assume that $M_i=M$ for all items $i$, i.e.\ that all items have the same number of response options. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements 
 \begin{itemize}
-    \item A uni-dimensional, unobserved trait denoted by $\theta$.
-    \item Local independence between items conditioned on the latent trait $\theta$.
-    \item The response of a person to an item can be modeled by a mathematical item response function (IRF), which is assumed to be monotone and increasing. 
+\item $\theta$ is uni-dimensional.
+\item Local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$.
+\item Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate
+\item $P(X_j=x|\theta)=\theta^x\gamma_x(\sum_{m=0}^M\theta^m\gamma_m)^{-1}$
 \end{itemize}
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing.
+
 The uni-dimensional trait, $\theta$, is often referred to as the latent variable, and it is the bridge between a participant's exogenous variables and their score on the items included in the questionnaire \cite{van-der-linden-hambleton-1997}. 
 
 \subsubsection{Notation}
