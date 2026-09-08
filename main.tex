@@ -215,7 +215,7 @@ Item response theory, and in particular Rasch models, are widely used for the an
 
 Questionnaires and tests are commonly used to measure quantities that cannot be observed directly, such as physical functioning, disability or pain. Item response theory provides a statistical framework for analyzing such data by modeling the relationship between observed item responses and an underlying latent trait. Within this framework, the Rasch model has an important role and is heavily used within the fields of psychometrics, educational testing and health measurement.
 
-However, for inference to be valid under the Rasch model, certain assumptions need to be fulfilled. In particular, item responses should be locally independent given the latent trait, and items should not exhibit differential item functioning with respect to exogenous covariates. If this is the case, we may work with the graphical Rasch model instead, which allows for inclusion of both differential item functioning and local dependence. Before such a model can be used we need to identify where the explicit violations of the standard Rasch model are present. \cite{Kreiner_Christensen_2011} poses a stepwise screening procedure for exactly this. The procedure involves several stages, including checks of consistency, tests for local dependence and differential item functioning, elimination of spurious evidence, and graph-based checks of the resulting model structure. While several R packages exist for fitting Rasch and related item response models, the screening procedure itself is not currently available as one coherent implementation. As a result, researchers often have to combine several tools and manual steps, which can make the analysis less transparent and harder to reproduce.
+However, for inference to be valid under the Rasch model, certain assumptions need to be fulfilled. In particular, item responses should be locally independent given the latent trait, and items should not exhibit differential item functioning with respect to exogenous covariates. If this is the case, we may work with the graphical Rasch model instead, which allows for inclusion of both differential item functioning and local dependence. Before such a model can be used we need to identify where the explicit violations of the standard Rasch model are present. \cite{kreiner-christensen-2011} poses a stepwise screening procedure for exactly this. The procedure involves several stages, including checks of consistency, tests for local dependence and differential item functioning, elimination of spurious evidence, and graph-based checks of the resulting model structure. While several R packages exist for fitting Rasch and related item response models, the screening procedure itself is not currently available as one coherent implementation. As a result, researchers often have to combine several tools and manual steps, which can make the analysis less transparent and harder to reproduce.
 
 The purpose of this project is to develop an R package that can help with exactly this item screening procedure. The package will be called \texttt{twigg} which stands for "Testing Within Item set Grouping using Graphical models". While this report may stand alone, it also serves a purpose, to present the necessary theory and most importantly explain the decision made and how the screening procedure is implemented. The goal is not to remove the need for statistical judgment, but to provide a structured computational tool that makes the screening process easier to carry out, inspect, and document.
 
@@ -229,10 +229,10 @@ As an example, the questionnaire could be a mathematical test, the participating
     \item Local independence between items conditioned on the latent trait $\theta$.
     \item The response of a person to an item can be modeled by a mathematical item response function (IRF), which is assumed to be monotone and increasing. 
 \end{itemize}
-The uni-dimensional trait, $\theta$, is often referred to as the latent variable, and it is the bridge between a participant's exogenous variables and their score on the items included in the questionnaire \cite{van-der-linden-hambleton}. 
+The uni-dimensional trait, $\theta$, is often referred to as the latent variable, and it is the bridge between a participant's exogenous variables and their score on the items included in the questionnaire \cite{van-der-linden-hambleton-1997}. 
 
 \subsubsection{Notation}
-Before diving deeper, let us get the notation straight. Let $Y_i$ denote a response to item $i$, and let $k$ specify the total number of items. $X_j$ denotes exogenous variable $j$, for which $m$ specifies the total number of covariates. For each participant, a total score can be computed as $S=\sum_{i=1}^k Y_i$, and we can also define a rest-score $R_i=S-Y_i=\left(\sum_{j=1}^kY_i\right)-Y_i = \sum_{j=1,j\neq i}^kY_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we can define a sub-score $S_B=\sum_{Y_i\in B}Y_i$. Lastly, as mentioned, $\theta$ denotes the unobserved trait, which dictates how a participant performs on the questionnaire \cite{Kreiner_Christensen_2011}. 
+Before diving deeper, let us get the notation straight. Let $Y_i$ denote a response to item $i$, and let $k$ specify the total number of items. $X_j$ denotes exogenous variable $j$, for which $m$ specifies the total number of covariates. For each participant, a total score can be computed as $S=\sum_{i=1}^k Y_i$, and we can also define a rest-score $R_i=S-Y_i=\left(\sum_{j=1}^kY_i\right)-Y_i = \sum_{j=1,j\neq i}^kY_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we can define a sub-score $S_B=\sum_{Y_i\in B}Y_i$. Lastly, as mentioned, $\theta$ denotes the unobserved trait, which dictates how a participant performs on the questionnaire \cite{kreiner-christensen-2011}. 
 
 \subsection{The Rasch Model}
 
@@ -253,7 +253,7 @@ As with any model, the Rasch model assumes the data satisfy certain criteria. Cr
     \item $S$ is sufficient for $\theta$.
 \end{enumerate}
 \end{mybox2}
-(\cite{rasch1960}, \cite{fischer1995rasch})
+(\cite{rasch-1960}, \cite{fischer-molenaar-1995})
 
 
 % \subsubsection{\textit{What is homogeneous data?}}
@@ -263,11 +263,11 @@ As with any model, the Rasch model assumes the data satisfy certain criteria. Cr
 
 \subsubsection{\textit{Local Independence?}}
 
-When we say we need local independence between items, we mean exactly that. Well conditional local independence to be exact, as we assume any two items $Y_i$ and $Y_j$ to be independent given $\theta$, which means they should also be independent given the score. We condition on the rest-score, but since there exists a specific rest-score for each item, we test the hypothesis in both directions, i.e., $Y_i \bot Y_j \mid R_i$ and $Y_i \bot Y_j \mid R_j$ \cite{Kreiner2013c_local_dependece_test}. Again returning to the math test example, if a correct answer to question three makes it easier to score higher on question four, then the two items are necessarily dependent, and we say the two items exhibit local dependency (LD), and the test designer must evaluate if this is the purpose of the situation. However, a violation of this assumption requires us to depart from classical Rasch model inference and turn to other models capable of handling this type of data structure (hint; the graphical log-linear Rasch model). It has been argued that models with this departure are still valid measurement models \cite{Kreiner2007_reflections}.
+When we say we need local independence between items, we mean exactly that. Well conditional local independence to be exact, as we assume any two items $Y_i$ and $Y_j$ to be independent given $\theta$, which means they should also be independent given the score. We condition on the rest-score, but since there exists a specific rest-score for each item, we test the hypothesis in both directions, i.e., $Y_i \bot Y_j \mid R_i$ and $Y_i \bot Y_j \mid R_j$ \cite{kreiner-christensen-2012}. Again returning to the math test example, if a correct answer to question three makes it easier to score higher on question four, then the two items are necessarily dependent, and we say the two items exhibit local dependency (LD), and the test designer must evaluate if this is the purpose of the situation. However, a violation of this assumption requires us to depart from classical Rasch model inference and turn to other models capable of handling this type of data structure (hint; the graphical log-linear Rasch model). It has been argued that models with this departure are still valid measurement models \cite{kreiner-2007}.
 
 
 \subsubsection{\textit{Differential Item Functioning?}}
-Differential item functioning (DIF) is a term describing the phenomenon when sub-grouping participants show different response patterns to the same item \cite{holland-wainer_DIF}. Consider the math test example once more. If we assume the data is homogeneous, meaning all participants share comparable exogenous variables. Then, grouping the participants via school and realizing that participants from school $A$ excel in question $1$ and $3$ compared to those attending school $B$, we say that school is a DIF source to the two items $1$ and $3$, and vice versa, we say that item $1$ and $3$ exhibit DIF relative to the exogenous variable school. When testing for DIF we are interested in hypothesis of the form 
+Differential item functioning (DIF) is a term describing the phenomenon when sub-grouping participants show different response patterns to the same item \cite{holland-wainer-2012}. Consider the math test example once more. If we assume the data is homogeneous, meaning all participants share comparable exogenous variables. Then, grouping the participants via school and realizing that participants from school $A$ excel in question $1$ and $3$ compared to those attending school $B$, we say that school is a DIF source to the two items $1$ and $3$, and vice versa, we say that item $1$ and $3$ exhibit DIF relative to the exogenous variable school. When testing for DIF we are interested in hypothesis of the form 
 \begin{equation}
     H_0: X_j \bot Y_i \mid S, \quad \forall j=1,\dots,m,\quad i=1,\dots,k.
 \end{equation}
@@ -281,20 +281,20 @@ If the latter two assumptions of the Rasch model are violated, then we have, in 
 \begin{align}
     P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_i+\sum_{i=1}^{n_L}\lambda_i(u_i,v_i)\\+ \sum_{i=1}^{n_D}\delta_i(a_i,z_i)+\sum_{i=1}^{n_G}\mu_i(g_i)\Big),
 \end{align}
-where $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{Kreiner_Christensen_2011}. \\
+where $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{kreiner-christensen-2011}. \\
 The G in GLLRM, which stands for graphical, refers to the simple fact that the model can be represented as a graph. In such a graph, variables are represented as nodes, and edges between item nodes represent LD, while edges between item and exogenous variable nodes represent discovered DIF. Hence, the associated graph with the GLLRM explicitly shows where the violations of the standard Rasch model is present. 
 
 
 
 \subsection{Measure of Association}
-To determine whether we are actually able to reject the null hypothesis, we must agree on some sort of measure. A measure of association. This could be the Spearman or Pearson correlation statistic. However, in accordance with the primary article by \citet{Kreiner_Christensen_2011} we will restrict ourselves to work with the partial gamma coefficient, this has also been argued to work well by \cite{Kreiner2013c_local_dependece_test}. The partial gamma coefficient is a natural extension of Goodman and Kruskal's gamma, which allows us to control for one or several variables. The core logic is the same behind both statistics, since we collect the number of concordant and discordant pairs and calculate the ratio between the difference and the sum. Hence, both entities lie in the closed set $[-1,1]$, and naturally the closer we observe the association measure to one of the two end-points the stronger the relationship \cite{agresti1984analysis}.
+To determine whether we are actually able to reject the null hypothesis, we must agree on some sort of measure. A measure of association. This could be the Spearman or Pearson correlation statistic. However, in accordance with the primary article by \citet{kreiner-christensen-2011} we will restrict ourselves to work with the partial gamma coefficient, this has also been argued to work well by \cite{kreiner-christensen-2012}. The partial gamma coefficient is a natural extension of Goodman and Kruskal's gamma, which allows us to control for one or several variables. The core logic is the same behind both statistics, since we collect the number of concordant and discordant pairs and calculate the ratio between the difference and the sum. Hence, both entities lie in the closed set $[-1,1]$, and naturally the closer we observe the association measure to one of the two end-points the stronger the relationship \cite{agresti-1984}.
 
 \subsubsection{Goodman and Kruskal's Gamma}
 Goodman and Kruskal's gamma is a measure of association capable of informing how two ordinal variables associate to each other. It is based on comparing pairs of observations after cross-tabulating the data with respect to the two variables of interest. The total number of observations, which rank the same, are called concordant, denoted $C$, and the total number of observations, that rank differently, are called discordant, denoted $D$. Ties are discarded. Finally, Goodman and Kruskal's gamma is given as
 \begin{equation}
     \gamma^{GK} = \frac{C-D}{C+D},
 \end{equation}
-\cite{Davis1967} and \cite{goodman-kruskal}.
+\cite{davis-1967} and \cite{goodman-kruskal-1954}.
 \begin{mybox3}
 \begin{example}
 Suppose we are given a dataset, containing 150 observations where customers have answered the two questions:
@@ -330,12 +330,12 @@ We want to determine the relationship between customer satisfaction and likeliho
 
 There is one shortcoming concerning Goodman and Kruskal's gamma, it is not directly applicable when we want to control for another variable or even a group of variables. Hence, we must equip ourselves accordingly for tests of conditional independence. 
 
-\paragraph{Partial gamma Coefficient.} In many of the situations where we need to report a measure of association, we will need to do so with respect to two variables, while controlling for one or several others. Hence, we need a stronger tool than Goodman and Kruskal's gamma. So we turn to \cite{Davis1967} who defined a partial gamma coefficient, which allows us to do exactly this. To compute this partial gamma, we will need to determine which variable we are controlling for, and hence conditioning on. Let's say we are testing for DIF between $Y_i$ and $X_j$, then we need to condition on the total score. So, the partial gamma coefficient is computed by first stratifying the data with respect to each unique value of the score. Let $n$ denote the total number of stratums, then for each strata we compute Goodman and Kruskal's gamma, while also storing the number of concordant and disconcordant paris that define each GK gamma, and we can compute the partial gamma coefficient as a weighted sum of the strata-specific GK gamma's. 
+\paragraph{Partial gamma Coefficient.} In many of the situations where we need to report a measure of association, we will need to do so with respect to two variables, while controlling for one or several others. Hence, we need a stronger tool than Goodman and Kruskal's gamma. So we turn to \cite{davis-1967} who defined a partial gamma coefficient, which allows us to do exactly this. To compute this partial gamma, we will need to determine which variable we are controlling for, and hence conditioning on. Let's say we are testing for DIF between $Y_i$ and $X_j$, then we need to condition on the total score. So, the partial gamma coefficient is computed by first stratifying the data with respect to each unique value of the score. Let $n$ denote the total number of stratums, then for each strata we compute Goodman and Kruskal's gamma, while also storing the number of concordant and disconcordant paris that define each GK gamma, and we can compute the partial gamma coefficient as a weighted sum of the strata-specific GK gamma's. 
 \begin{align}
     \hat{\gamma}_{Y_i\bot X_j\mid S} &= \sum_{i=1}^n w_i\gamma^{GK}_i = \sum_{i=1}^n\frac{(C_i+D_i)}{\sum_{i=1}^n(C_i+D_i)}\frac{C_i-D_i}{C_i+D_i} \\
     &= \frac{\sum_{i=1}^n(C_i-D_i)}{\sum_{i=1}^n(C_i+D_i)} = \frac{\sum_{i=1}^nC_i-\sum_{i=1}^nD_i}{\sum_{i=1}^nC_i+\sum_{i=1}^nD_i}.
 \end{align}
-The weights, and hence the contribution per GK gamma, is the ratio between the sum of concordant and discordant pairs that defines the $i$th $\gamma^{GK}$, and the sum of all strata-specific concordant and discordant pairs. This allows the individual $\gamma^{GK}$ to contribute a weight towards the partial gamma that is proportional to the number of observations defining that $\gamma^{GK}$, \cite{agresti1984analysis}.  
+The weights, and hence the contribution per GK gamma, is the ratio between the sum of concordant and discordant pairs that defines the $i$th $\gamma^{GK}$, and the sum of all strata-specific concordant and discordant pairs. This allows the individual $\gamma^{GK}$ to contribute a weight towards the partial gamma that is proportional to the number of observations defining that $\gamma^{GK}$, \cite{agresti-1984}.  
 
 
 
@@ -343,11 +343,11 @@ The weights, and hence the contribution per GK gamma, is the ratio between the s
 When we perform the second step of the screening procedure (see table \ref{tab:item_screening_guide} in section \ref{sec:it_sec}) we are evaluating a lot of tests at once, which means the risk of false discovery rate (FDR) increases. This will need to be accounted for. 
 
 \subsubsection{The Benjamin-Hochberg Procedure}
-A method for controlling the FDR, when performing multiple hypothesis tests at once, is via the Benjamin-Hochberg procedure. This procedure adjusts the raw $p$-values to account for multiple testing, resulting in a more conservative set of accepted alternative hypotheses. The BH procedure is quite simple. Say we perform $T$ tests, the $T$ raw $p$-values are ranked in ascending order $p_1<p_2<\dots <p_T$. The BH $p$-adjusting method then proceeds to control the FDR at the level we determine the raw $p$-values significance level, $\alpha$, by finding the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and label all $p_i$ significant for $i=1,\dots,t$, \cite{BenjaminiHochberg2013}.
+A method for controlling the FDR, when performing multiple hypothesis tests at once, is via the Benjamin-Hochberg procedure. This procedure adjusts the raw $p$-values to account for multiple testing, resulting in a more conservative set of accepted alternative hypotheses. The BH procedure is quite simple. Say we perform $T$ tests, the $T$ raw $p$-values are ranked in ascending order $p_1<p_2<\dots <p_T$. The BH $p$-adjusting method then proceeds to control the FDR at the level we determine the raw $p$-values significance level, $\alpha$, by finding the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and label all $p_i$ significant for $i=1,\dots,t$, \cite{benjamini-hochberg-1995}.
 
 
 \section{Item Screening}\label{sec:it_sec}
-The posed item screening we are implementing is to be found, described in Table 5 in \cite{Kreiner_Christensen_2011}, but we will include it here for completeness.
+The posed item screening we are implementing is to be found, described in Table 5 in \cite{kreiner-christensen-2011}, but we will include it here for completeness.
 
 \begin{table}[ht]
 \centering
@@ -377,18 +377,18 @@ Step 6 &
 Tests of global Markov properties of the GLLRM \\
 \bottomrule
 \end{tabular}
-\caption{The strategy for item screening presented in paper by \cite{Kreiner_Christensen_2011}.}
+\caption{The strategy for item screening presented in paper by \cite{kreiner-christensen-2011}.}
 \label{tab:item_screening_guide}
 \end{table}
 
 \subsection{Under the Hood of the Item Screening Procedure and How It Is Implemented}
-A lot of information is embedded within Table \ref{tab:item_screening_guide}, while we refer the reader to \cite{Kreiner_Christensen_2011} for a full derivation of the procedure, we will now unfold the steps, argue how we understand each one, and how the methods we use are implemented in the package. 
+A lot of information is embedded within Table \ref{tab:item_screening_guide}, while we refer the reader to \cite{kreiner-christensen-2011} for a full derivation of the procedure, we will now unfold the steps, argue how we understand each one, and how the methods we use are implemented in the package. 
 
 \subsubsection{Step 0: A Note on Pre-Processing}
 What do we do with missing values? One possibility is simply to throw away all observations that contain one or more missing values. When we encounter missing values in item responses we cannot compute total scores and therefore no rest-scores, which means we won't be able to test for DIF and LD, and the list of problems this entails goes on. However, it seems overkill to throw an entire observation away because a participant forgot to note their gender when filling out the questionnaire. The main goal of the pre-processing we force upon the data, after any user has processed the data themselves, is to keep as many observations when performing the different tests as possible. In all the steps we are working with item scores, so we need these to be complete; therefore, this is fairly strict. However, the distribution of missing observations in exogenous variables might lead to an even thinner dataset if we also throw away these data points. Hence, we will only do so per exogenous variable. Meaning when we screen for DIF, we do so on a subset of the dataset that considers complete cases with respect to all items and the one exogenous variable only. This way we ensure as many observations as possible are used in each step, without introducing any new information to the data. 
 
 
-\subsubsection{Step 1} In this initial step of the item screening, we are only concerned with associations. Association between variables can be interpreted many ways, but the objective is simply to determine the relationship between variables. We choose to work with the partial gamma coefficient as per \citet{Kreiner_Christensen_2011}, but other measures are also possible. We use this association measure to check whether the data fulfill the three necessary assumptions M1, M2, and M3. \\
+\subsubsection{Step 1} In this initial step of the item screening, we are only concerned with associations. Association between variables can be interpreted many ways, but the objective is simply to determine the relationship between variables. We choose to work with the partial gamma coefficient as per \citet{kreiner-christensen-2011}, but other measures are also possible. We use this association measure to check whether the data fulfill the three necessary assumptions M1, M2, and M3. \\
 \textbf{M1} demands the chosen measure of association is strictly non-negative between all pairs of items in the data set. \\
 \textbf{M2} demands that any item $Y_a$ is positively related to its corresponding rest-score $R_a$, and all sub-scores $S_B$, where $Y_a\not\in B$. \\
 \textbf{M3} demands that if an exogenous variable $X$ is positively related to the latent, person-specific, variable $\theta$, then $X$ will also be positively related to the total score $S$, all sub-scores, $S_A$, and all item responses $Y_i$. 
@@ -402,7 +402,7 @@ In this step, we begin the analysis of DIF and LD. We use the partial gamma coef
 \begin{align*}
     H_0^{DIF}: Y_i \bot X_j  \mid S \qquad \text{and} \qquad H_0^{LD}:Y_i \bot Y_{i'} \mid R_i,
 \end{align*}
-\cite{Kreiner_Christensen_2011}. Rejecting the null if the corresponding asymptotic $p$-value of the partial gamma coefficient, after controlling for multiple testing using the Benjamin-Hochberg procedure, is below $0.05$. The exact way we compute the partial gamma coefficient for the two types of tests is described in Algorithm \ref{alg:part_gam} below. 
+\cite{kreiner-christensen-2011}. Rejecting the null if the corresponding asymptotic $p$-value of the partial gamma coefficient, after controlling for multiple testing using the Benjamin-Hochberg procedure, is below $0.05$. The exact way we compute the partial gamma coefficient for the two types of tests is described in Algorithm \ref{alg:part_gam} below. 
 
 \begin{breakablealgorithm}
 \caption{Partial $\gamma$ coefficient for testing $A \bot B \mid \mathcal{C}$}
@@ -478,7 +478,7 @@ In the above algorithm $A$ and $B$ are arbitrary variables, but naturally they c
 \subsubsection{Step 3}
 In this step of the screening process we begin the filtering of spurious evidence for LD and DIF. 
 
-\paragraph{Step 3(a)} is a stepwise inclusion algorithm, which considers all the item pairs flagged for LD. For each item pair both directions are tested, and the described algorithm in \cite{Kreiner_Christensen_2011} argues that we should take the strongest evidence of LD at face value, and then disregard all other tests as spurious if one of the two items in the accepted genuine LD is defining the conditional rest-score. But how do we do this in practice? What if an LD test $Y_i \bot Y_{i'} \mid R_i$ is significant but the reverse direction $Y_i \bot Y_{i'} \mid R_{i'}$ is not? And how do we determine which evidence for LD is the strongest?
+\paragraph{Step 3(a)} is a stepwise inclusion algorithm, which considers all the item pairs flagged for LD. For each item pair both directions are tested, and the described algorithm in \cite{kreiner-christensen-2011} argues that we should take the strongest evidence of LD at face value, and then disregard all other tests as spurious if one of the two items in the accepted genuine LD is defining the conditional rest-score. But how do we do this in practice? What if an LD test $Y_i \bot Y_{i'} \mid R_i$ is significant but the reverse direction $Y_i \bot Y_{i'} \mid R_{i'}$ is not? And how do we determine which evidence for LD is the strongest?
 
 \paragraph{\textit{Step 3(a) in practice:}} From the initial screening of LD in step 2, we look at all flagged evidence of LD from which we may create four meaningful lists:
 \begin{itemize}
@@ -723,7 +723,7 @@ Thus, LD between item 1 and item 3 would be accepted as genuine, resulting in th
 
 
 
-\paragraph{Step 3(b)} is an elimination algorithm. Here we attempt to distinguish genuine sources of DIF, relative to items exhibiting it, from spurious. This step is implemented exactly as the procedure reads in \cite{Kreiner_Christensen_2011}, which boils down to the following algorithm.
+\paragraph{Step 3(b)} is an elimination algorithm. Here we attempt to distinguish genuine sources of DIF, relative to items exhibiting it, from spurious. This step is implemented exactly as the procedure reads in \cite{kreiner-christensen-2011}, which boils down to the following algorithm.
 
 \begin{breakablealgorithm}
 \caption{Elimination of Spurious DIF Sources for Item $Y_i$}
@@ -813,7 +813,7 @@ S = \sum_{Y_k \in \mathcal{I}} Y_k .
 
 \end{algorithmic}
 \end{breakablealgorithm}
-Note, importantly that no source is removed from the source list until all tests have been performed in the current iteration. Furthermore, in line 8 we refer to Algorithm \ref{alg:mc_cond_independence}, which is in line with the discussion in Section 5.1 by \cite{Kreiner_Christensen_2011} on how to determine if the tests are significant. Algorithm \ref{alg:mc_cond_independence} is simply a Monte Carlo based method for estimating $p$-values. 
+Note, importantly that no source is removed from the source list until all tests have been performed in the current iteration. Furthermore, in line 8 we refer to Algorithm \ref{alg:mc_cond_independence}, which is in line with the discussion in Section 5.1 by \cite{kreiner-christensen-2011} on how to determine if the tests are significant. Algorithm \ref{alg:mc_cond_independence} is simply a Monte Carlo based method for estimating $p$-values. 
 
 \begin{breakablealgorithm}
 \caption{Monte Carlo approximation of the $p$-value for a conditional independence test}
@@ -888,7 +888,7 @@ p
 \end{breakablealgorithm}
 
 Important note: The partial gamma coefficient is used as an effect size measure. The
-Monte Carlo $p$-value is not obtained by permuting the partial gamma coefficient directly, but from the conditional independence test statistic implemented in \texttt{coin}. However, note that the two are obviously still related as they both assess conditional association between the same variables given the same strata, but they are not the same statistic. \texttt{Coin} uses some linear statistic, $T$, which is suggested by \cite{strasser1999asymptotic}, which is of the form:
+Monte Carlo $p$-value is not obtained by permuting the partial gamma coefficient directly, but from the conditional independence test statistic implemented in \texttt{coin}. However, note that the two are obviously still related as they both assess conditional association between the same variables given the same strata, but they are not the same statistic. \texttt{Coin} uses some linear statistic, $T$, which is suggested by \cite{strasser-weber-1999}, which is of the form:
 \begin{equation}
     T= vec\left( 
     \sum_{i=1}^nw_ig(X_i)h(Y_i,(Y_1,\dots,Y_n))^T
@@ -902,7 +902,7 @@ $g$ is a transformation function of $X$ and is referred to as the regression fun
 
 \paragraph{Step 3(c)} The elimination algorithm applied in Step 3(c) is very similar to that used in 3(b). In fact, it is the exact same procedure, but instead of eliminating sources of spurious DIF, we eliminate items exhibiting spurious DIF w.r.t. exogenous variables. In other words, we are working with the $DIF(X_i)$ lists instead of the $SOURCE(Y_i)$ lists. Hence, we refer the curious reader to Appendix \ref{sec:App1} for the full algorithm. 
 
-\paragraph{\textit{Combine Step 3(b) and 3(c).}} As per the article \cite{Kreiner_Christensen_2011}, the order of Step 3(b) and 3(c) does not make any difference since we are not making any final decisions until both steps have been performed. When both steps have been performed, we are left with a list of item and exogenous variable pairs, the partial gamma coefficient from testing independence between the pair given score, and possibly other items, and a $p$-value. Furthermore, for the same item and exogenous variable pair, we will have a partial gamma coefficient from the test of conditional independence between the pair given the score and possibly other exogenous variables together with the corresponding $p$-value. And not until now will final conclusions, on whether or not the DIF is genuine or not, be made. DIF will only be accepted as genuine if both $p$-values are significant.
+\paragraph{\textit{Combine Step 3(b) and 3(c).}} As per the article \cite{kreiner-christensen-2011}, the order of Step 3(b) and 3(c) does not make any difference since we are not making any final decisions until both steps have been performed. When both steps have been performed, we are left with a list of item and exogenous variable pairs, the partial gamma coefficient from testing independence between the pair given score, and possibly other items, and a $p$-value. Furthermore, for the same item and exogenous variable pair, we will have a partial gamma coefficient from the test of conditional independence between the pair given the score and possibly other exogenous variables together with the corresponding $p$-value. And not until now will final conclusions, on whether or not the DIF is genuine or not, be made. DIF will only be accepted as genuine if both $p$-values are significant.
 \begin{mybox3}
 \begin{example}
 Assume we have five items $\{A,B,C,D,E\}$ and two exogenous variables
@@ -1030,7 +1030,7 @@ DIF(X)=\{A\}, \qquad DIF(Z)=\{E\}.
 
 
 \subsubsection{Step 4}
-Moving away from DIF and LD for a moment, we are now interested in the structural association between the total score and exogenous variables, which we will investigate via backwards elimination search, as per \cite{Kreiner_Christensen_2011} suggestion. The idea here is to determine which exogenous covariates to retain as structural predictors of the score, which we do by tests of conditional independence between the score and exogenous variables given the remaining set of exogenous variables still retained. 
+Moving away from DIF and LD for a moment, we are now interested in the structural association between the total score and exogenous variables, which we will investigate via backwards elimination search, as per \cite{kreiner-christensen-2011} suggestion. The idea here is to determine which exogenous covariates to retain as structural predictors of the score, which we do by tests of conditional independence between the score and exogenous variables given the remaining set of exogenous variables still retained. 
 
 \paragraph{\textit{Step 4 in practice.}} The general structure of Step 4 is clear from posed screening procedure. The backwards elimination search for exogenous variables associated with the score is implemented as described in Algorithm \ref{alg:step4} below. When we determine significance of tests, we do so using the same framework as in Step 3(b) and 3(c), i.e., via the Monte Carlo approximation implemented by Algorithm \ref{alg:mc_cond_independence}.
 
@@ -1092,7 +1092,7 @@ We perform three types of tests to determine this. For DIF, the tests are of the
     S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
     \operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
 \end{align}
-For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibiting, what Step 3 has determined to be genuine LD, we now retest this in the following way: Separate the two pairs in the graph and observe which other LD connections are available from the two. We then consider the sub-score defined by the complement to the relevant sets, and use this to condition on together with other DIF sources for the corresponding LD connections. These are referred to as $C7$ and $C9$ hypothesis \cite{Kreiner_Christensen_2011}. We allow the LD edge to be retained, if at least one of the two tests are significant. 
+For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibiting, what Step 3 has determined to be genuine LD, we now retest this in the following way: Separate the two pairs in the graph and observe which other LD connections are available from the two. We then consider the sub-score defined by the complement to the relevant sets, and use this to condition on together with other DIF sources for the corresponding LD connections. These are referred to as $C7$ and $C9$ hypothesis \cite{kreiner-christensen-2011}. We allow the LD edge to be retained, if at least one of the two tests are significant. 
 
 \begin{mybox3}
     \begin{example}
@@ -1223,13 +1223,13 @@ We clearly see from the graph above, that the LD connections still available are
 
 
 \section{Data Example}
-We will now put the package to use on a shoulder pain and disability (SPADI) questionnaire dataset, provided by \cite{SPADI_data}. 
+We will now put the package to use on a shoulder pain and disability (SPADI) questionnaire dataset, provided by \cite{christensen-2018}. 
 
 \subsection{Step 0: Getting Started}
 The screening procedure does not contain a Step $0$ explicitly, but naturally it is expected that the statistician gets familiar with the data at hand and potentially pre-processes it before any screening and/or analysis is performed.
 
 
-The dataset contains observations from participants answering a questionnaire with $13$ questions in total, five concerning pain and eight concerning disabilities. All items are scored on the discrete scale, $(0,1,2,3,4,5,6,7,8,9,10)$, with a higher number indicating a higher level of pain or disability associated with the given item. Beyond the item scores two exogenous variables ``gender'' and ``above60'' are present. The total number of observations available is $229$. From the $229$ observations, $213$ are complete with respect to item responses. The empirical distribution of missing values for the two exogenous variables, in the subset of complete item responses, is $0$ for both. Hence, we will be working with the entire $213$ cases throughout the screening. As per \cite{Christensen2018}, we will be splitting the dataset and treating the two sub-scales, pain and disability, as two different questionnaires, while also adhering to the proposal by \cite{Jerosch-Herold2017}, that we should map the possible scores from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. We will therefore move forward with two datasets, a $213\times 7$ pain questionnaire and a $213\times 10$ disability questionnaire. 
+The dataset contains observations from participants answering a questionnaire with $13$ questions in total, five concerning pain and eight concerning disabilities. All items are scored on the discrete scale, $(0,1,2,3,4,5,6,7,8,9,10)$, with a higher number indicating a higher level of pain or disability associated with the given item. Beyond the item scores two exogenous variables ``gender'' and ``above60'' are present. The total number of observations available is $229$. From the $229$ observations, $213$ are complete with respect to item responses. The empirical distribution of missing values for the two exogenous variables, in the subset of complete item responses, is $0$ for both. Hence, we will be working with the entire $213$ cases throughout the screening. As per \cite{christensen-et-al-2019}, we will be splitting the dataset and treating the two sub-scales, pain and disability, as two different questionnaires, while also adhering to the proposal by \cite{jerosch-herold-et-al-2018}, that we should map the possible scores from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. We will therefore move forward with two datasets, a $213\times 7$ pain questionnaire and a $213\times 10$ disability questionnaire. 
 
 
 \subsection{Step 1}
@@ -1535,7 +1535,7 @@ The M2 and M3 checks are implemented as screening procedures measuring the assoc
 
 The stepwise inclusion algorithm, identifying genuine LD in step 3a, groups pairs with two significant LD tests and weigh them equally but prioritize them over item pairs only exhibiting one significant LD test, which are also grouped. In both groups the strongest evidence of genuine LD is determined by the absolute value of the weighted partial gamma coefficient of the two tests. This means that both positive and negative association LD can be prioritized as the strongest signal. The idea is that an item pair with two significant tests must have a stronger LD signal than item pairs with only one significant test. While allowing item pairs to drop from the set of two significant tests into the set with only one. The use of weighted partial gammas allow us to compare the LD pairs equally and also ensures the contribution of a test to the decision statistic is influenced proportionally to the number of comparable pairs defining the partial gamma, thus keeping as much information in the decision statistic as possible. Opposed to comparing pairs based on their naive arithmetic mean. 
 
-A negative partial gamma association between two items means that scoring high on one of the two will lead you to scoring low on the other. When does this makes sense? In a setting where two questions test different methods. But then we are no longer modeling a unidimensional latent trait, but a multi dimensional one \cite{Kreiner2004_neg_partial_gam_discussion}, and it should be well considered if the questionnaire should be handled as a whole or split into sub questionnaires.  
+A negative partial gamma association between two items means that scoring high on one of the two will lead you to scoring low on the other. When does this makes sense? In a setting where two questions test different methods. But then we are no longer modeling a unidimensional latent trait, but a multi dimensional one \cite{kreiner-christensen-2004}, and it should be well considered if the questionnaire should be handled as a whole or split into sub questionnaires.  
 
 
 For DIF, one of the two important decisions made, is that 3b and 3c are complementary steps and not individual, meaning no decisions are made until both have been performed and compared. We only retain a DIF edge if it survives both steps, which is a rather conservative choice. However, the general overall procedure is to start with a large set of LD and DIF (step 2) and then proceed to narrow the sets down as we get deeper into the screening. As all LD and DIF edges are tested again in later steps. The advantage being that we are less likely to include spurious DIF edges, but at the cost of potentially removing weaker but genuine DIF relations. The second important of the two decisions made in the DIF framework is how we estimate $p$-values. As strata quickly become so thin that asymptotic $p$-values are unreliable, we've chosen to rely on Monte Carlo estimation of the exact $p$-values. While Monte Carlo methods may provide an easy framework for approximating $p$-values it also introduces some simulation uncertainty. In other words, the number of resamples $B$ affects the stability and therefore precision of $p$-values, not to mention how the unique resampling actually looks for a specific $p$-value. Alternative methods include; asymptotic $p$-values (which should be noted: is implemented for reproducibility purposes!), bootstrapping and/or other resampling procedures. Asymptotic tests are faster, almost instantaneous, but may be less reliable in large sparse contingency tables, while bootstrapping or resampling methods may be more computationally demanding tasks and require additional choices to be made about what exactly we want to resample. 
