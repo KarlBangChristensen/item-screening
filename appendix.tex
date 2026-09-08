@@ -1,0 +1,88 @@
+\begin{breakablealgorithm}
+\caption{Elimination of Spurious DIF Items for One Exogenous Covariate $X_j$}
+\label{alg:step3c}
+
+\begin{algorithmic}[1]
+\Require Dataset with item responses and exogenous covariates; exogenous covariate $X_j$; item set $\mathcal{I}$; initial DIF set for $X_j$, $\mathrm{DIF}(X_j)$; and significance level $\alpha$
+
+\Ensure Final set of items exhibiting genuine DIF with respect to $X_j$; $\widehat{\mathrm{DIF}}(X_j)$.
+
+\State Compute the total score
+\[
+S = \sum_{Y_k \in \mathcal{I}} Y_k .
+\]
+
+\State Initialize
+\[
+\mathcal{S}_j^{(0)} \gets \mathrm{DIF}(X_j).
+\]
+
+\State Set $t \gets 0$.
+
+\Repeat
+
+    \State Let
+    \[
+    \mathcal{P}_j^{(t)} \gets \mathcal{S}_j^{(t)}
+    \]
+    denote the DIF set used during the current pass.
+
+    \State Set
+    \[
+    Y_{\mathrm{drop}} \gets \emptyset,
+    \qquad
+    p_{\mathrm{drop}} \gets -\infty .
+    \]
+
+    \ForAll{$Y_i \in \mathcal{P}_j^{(t)}$}
+
+        \State Use Algorithm~\ref{alg:mc_cond_independence} to test
+        \[
+        H_0:
+        Y_i \perp X_j
+        \mid
+        S,\,
+        \mathcal{P}_j^{(t)} \setminus \{Y_i\}.
+        \]
+
+        \State Let $p_i^{(t)}$ denote the corresponding $p$-value.
+
+        \If{$p_i^{(t)} > \alpha$ and $p_i^{(t)} > p_{\mathrm{drop}}$}
+            \State Set
+            \[
+            Y_{\mathrm{drop}} \gets Y_i,
+            \qquad
+            p_{\mathrm{drop}} \gets p_i^{(t)} .
+            \]
+        \EndIf
+
+    \EndFor
+
+    \If{$Y_{\mathrm{drop}} = \emptyset$}
+        \State Stop the elimination procedure.
+    \Else
+        \State Remove the non-significant item with the highest $p$-value found in the current pass:
+        \[
+        \mathcal{S}_j^{(t+1)}
+        \gets
+        \mathcal{S}_j^{(t)}
+        \setminus
+        \{Y_{\mathrm{drop}}\}.
+        \]
+
+        \State Set $t \gets t+1$.
+    \EndIf
+
+\Until{no item is removed or $\mathcal{S}_j^{(t)} = \emptyset$}
+
+\State Set
+\[
+\widehat{\mathrm{DIF}}(X_j)
+\gets
+\mathcal{S}_j^{(t)} .
+\]
+
+\State \Return $\widehat{\mathrm{DIF}}(X_j)$
+
+\end{algorithmic}
+\end{breakablealgorithm}

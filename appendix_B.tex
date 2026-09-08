@@ -1,0 +1,121 @@
+\subsection{Step 1 Results for Disability Sub-scale}
+\subsubsection{M1}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c | c c c c c c c c}
+            & $D1$ & $D2$ & $D3$ & $D4$ & $D5$ & $D6$ & $D7$ & $D8$\\
+            \hline 
+        $D1$ & $1.000$ & $0.694$ & $0.677$ & $0.582$ & $0.623$ & $0.648$ & $0.567$ & $0.615$ \\
+        $D2$ & $0.694$ & $1.000$ & $0.671$ & $0.516$ & $0.540$ & $0.635$ & $0.494$ & $0.658$\\
+        $D3$ & $0.677$ & $0.671$ & $1.000$ & $0.645$ & $0.652$ & $0.688$ & $0.438$ & $0.673$ \\
+        $D4$ & $0.582$ & $0.516$ & $0.645$ & $1.000$ & $0.729$ & $0.526$ & $0.446$ & $0.638$\\
+        $D5$ & $0.623$ & $0.540$ & $0.652$ & $0.729$ & $1.000$ & $0.554$ & $0.499$ & $0.655$ \\
+        $D6$ & $0.648$ & $0.635$ & $0.688$ & $0.526$ & $0.554$ & $1.000$ & $0.484$ & $0.598$\\
+        $D7$ & $0.567$ & $0.494$ & $0.438$ & $0.446$ & $0.499$ & $0.484$ & $1.000$ & $0.527$\\
+        $D8$ & $0.615$ & $0.658$ & $0.673$ & $0.638$ & $0.655$ & $0.598$ & $0.527$ & $1.000$\\
+         \hline    
+    \end{tabular}
+    \caption{Partial gamma association between items in disability sub-scale.}
+    \label{tab:M1_dis}
+\end{table}
+
+\subsubsection{M2}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c c c c c c c c}
+    & $D1$ & $D2$ & $D3$ & $D4$ & $D5$ & $D6$ & $D7$ & $D8$\\
+            \hline 
+    Score & $0.717$ & $0.678$ &$ 0.709$ & $0.642$ &$ 0.68$3&  $0.648$& $0.518$&  $0.702 $ \\
+    \hline 
+    \end{tabular}
+    \caption{Partial gamma association between items and score in disability sub-scale.}
+    \label{tab:M2_dis}
+\end{table}
+
+\subsubsection{M3}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c c c c c}
+        \hline
+        Covariate & Target type & Target name & Correlation & Method \\
+        \hline
+        gender & score & total\_score & $0.264$ & gamma \\
+        gender & item & D1 & $0.269$ & gamma \\
+        gender & item & D2 & $0.204$ & gamma \\
+        gender & item & D3 & $0.286$ & gamma \\
+        gender & item & D4 & $0.060$ & gamma \\
+        gender & item & D5 & $0.283$ & gamma \\
+        gender & item & D6 & $0.268$ & gamma \\
+        gender & item & D7 & $0.364$ & gamma \\
+        gender & item & D8 & $0.262$ & gamma \\
+        over60 & score & total\_score & $0.179$ & gamma \\
+        over60 & item & D1 & $0.133$ & gamma \\
+        over60 & item & D2 & $0.133$ & gamma \\
+        over60 & item & D3 & $0.119$ & gamma \\
+        over60 & item & D4 & $0.258$ & gamma \\
+        over60 & item & D5 & $0.275$ & gamma \\
+        over60 & item & D6 & $0.182$ & gamma \\
+        over60 & item & D7 & $\mathbf{-0.031^*}$ & gamma \\
+        over60 & item & D8 & $0.287$ & gamma \\
+        \hline
+    \end{tabular}
+    \caption{Gamma correlations between covariates and disability sub-scale scores/items.}
+    \label{tab:gamma_covariates_disability}
+\end{table}
+
+\subsection{Step 1 Results for Pain Sub-scale}
+\subsubsection{M1}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c | c c c c c}
+            & $P1$ & $P2$ & $P3$ & $P4$ & $P5$\\
+            \hline 
+        $P1$ & $1.000$ & $0.576$ & $0.658$ & $0.527$ & $0.542$ \\
+        $P2$ & $0.576$ & $1.000$ & $0.617$ & $0.581$ & $0.533$ \\
+        $P3$ & $0.658$ & $0.617$ & $1.000$ & $0.795$ & $0.591$ \\
+        $P4$ & $0.527$ & $0.581$ & $0.795$ & $1.000$ & $0.614$ \\
+        $P5$ & $0.542$ & $0.533$ & $0.591$ & $0.614$ & $1.000$ \\
+         \hline    
+    \end{tabular}
+    \caption{Partial gamma association between items in pain sub-scale.}
+    \label{tab:M1_pain}
+\end{table}
+
+\subsubsection{M2}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c|c c c c c }
+    & $P1$ & $P2$ & $P3$ & $P4$ & $P5$\\
+            \hline 
+    Score & $0.611$ & $0.620$ & $0.740$ & $0.698$ &  $0.613$ \\
+    \hline 
+    \end{tabular}
+    \caption{Partial gamma association between items and score in pain sub-scale.}
+    \label{tab:M2_dis}
+\end{table}
+
+\subsubsection{M3}
+\begin{table}[H]
+    \centering
+    \begin{tabular}{c c c c c}
+        \hline
+        Covariate & Target type & Target name & Correlation & Method \\
+        \hline
+        gender & score & total\_score & $0.103$ & gamma \\
+        gender & item & P1 & $0.232$ & gamma \\
+        gender & item & P2 & $0.073$ & gamma \\
+        gender & item & P3 & $0.105$ & gamma \\
+        gender & item & P4 & $0.081$ & gamma \\
+        gender & item & P5 & $0.130$ & gamma \\
+        over60 & score & total\_score & $0.021$ & gamma \\
+        over60 & item & P1 & $\mathbf{-0.162^*}$ & gamma \\
+        over60 & item & P2 & $\mathbf{-0.008^*}$ & gamma \\
+        over60 & item & P3 & $0.108$ & gamma \\
+        over60 & item & P4 & $0.150$ & gamma \\
+        over60 & item & P5 & $\mathbf{-0.018^*}$ & gamma \\
+        \hline
+    \end{tabular}
+    \caption{Gamma correlations between covariates and pain sub-scale scores/items.}
+    \label{tab:gamma_covariates_pain}
+\end{table}
+
