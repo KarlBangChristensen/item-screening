@@ -1,0 +1,19 @@
+\section*{The General Ordinal Item Response Model}
+
+For ease of exposition, the main text restricts attention to dichotomous items, $Y_i\in\{0,1\}$. Here we give the corresponding formulas for the general case of ordinal items with $M+1$ response categories, $Y_i\in\{0,1,\ldots,M\}$ (assuming, for ease of notation, that all items have the same number of response categories).
+
+The parametric form of the response probabilities is
+$$
+P(Y_i=y|\theta)=\frac{\exp(y\theta+\alpha_{iy})}{\sum_{z=0}^M\exp(z\theta+\alpha_{iz})},
+$$
+which reduces to the dichotomous form used in the main text when $M=1$ and $\alpha_{i0}=0$, $\alpha_{i1}=\alpha_i$.
+
+Combining requirements (ii)-(iv) of Section~\ref{sec:models_measurement}, the Rasch model in vector form is
+\begin{align}
+P(\boldsymbol{Y} = \boldsymbol{y} | \boldsymbol{X} = \boldsymbol{x}, \theta) =\exp\left(\alpha_0+\theta S+\sum_{i=1}^k\alpha_{iy_i}\right)
+\end{align}
+where
+$$
+\alpha_0=-\log\left(\prod_{i=1}^k\sum_{z=0}^M\exp(z\theta+\alpha_{iz})\right)
+$$
+is a normalizing constant that does not depend on the observed data $(\boldsymbol{y},\boldsymbol{x})$, and which reduces to the dichotomous normalizing constant of the main text when $M=1$.

@@ -116,14 +116,14 @@ In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2
 
 The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \cite{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure. 
 
-\subsection{Models for measurement}
+\subsection{Models for measurement}\label{sec:models_measurement}
 
-The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$, where $Y_i\in\{0,1,\ldots,M_i\}$. For ease of notation, we assume that $M_i=M$ for all items $i$, i.e.\ that all items have the same number of response options. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$;
+The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$;
 (iii) Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
 $$
-P(Y_i=y|\theta)=\frac{\exp(y\theta+\alpha_{iy})}{\sum_{z=0}^M\exp(z\theta+\alpha_{iz})}
+P(Y_i=y|\theta)=\frac{\exp(y(\theta+\alpha_{i}))}{1+\exp(\theta+\alpha_{i})}
 $$
-The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing. 
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing.
 
 \subsubsection{Notation}
 For each participant total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-scores as $R_i=S-Y_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we define sub-scores $S_B=\sum_{Y_i\in B}Y_i$.
@@ -132,11 +132,11 @@ For each participant total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-
 
 Combining the requirements (ii)-(iv) we can write the Rasch model in vector form
 \begin{align}
-P(\boldsymbol{Y} = \boldsymbol{y} | \boldsymbol{X} = \boldsymbol{x}, \theta) =\exp\left(\alpha_0+\theta S+\sum_{i=1}^k\alpha_{iy_i}\right) \label{eq:sufficient}
+P(\boldsymbol{Y} = \boldsymbol{y} | \boldsymbol{X} = \boldsymbol{x}, \theta) =\exp\left(\alpha_0+\theta S+\sum_{i=1}^k y_i\alpha_{i}\right) \label{eq:sufficient}
 \end{align}
-where 
+where
 $$
-\alpha_0=-\log\left(\prod_{i=1}^k\sum_{z=0}^M\exp(z\theta+\alpha_{iz})\right)
+\alpha_0=-\log\left(\prod_{i=1}^k\left(1+\exp(\theta+\alpha_i)\right)\right)
 $$
 is a normalizing constant that does not depended on the observed data $(\boldsymbol{y},\boldsymbol{x})$. It is a consequence of (\ref{eq:sufficient}) that $S$ is sufficient for $\theta$. This is feature that makes the Rasch model stand out from other models for measurement. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
 
@@ -655,6 +655,11 @@ Future development could also focus on improving the integration between twigg a
 \bibliography{reference}
 
 \newpage
+\begin{appendices}
+\section{}\label{sec:AppGeneral}
+\input{Appendix - general item response model}
+\end{appendices}
+
 \begin{appendices}
 \section{}\label{sec:App1}
 %\input{appendix}
