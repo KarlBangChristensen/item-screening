@@ -1,0 +1,444 @@
+\section*{Algorithms}
+
+This appendix collects the pseudocode for the algorithms implementing the item screening procedure described in Section~\ref{sec:it_sec}, in the order in which they are used.
+
+\subsection*{Step 2: Partial Gamma Coefficient}
+\begin{breakablealgorithm}
+\caption{Partial $\gamma$ coefficient for testing $A \bot B \mid \mathcal{C}$}
+\label{alg:part_gam}
+
+\begin{algorithmic}
+\Require Dataset with item responses and exogenous covariates; variables $A$ and $B$; conditioning variables $\mathcal{C}$
+\Ensure Partial gamma coefficient $\gamma_{A \bot B \mid \mathcal{C}}$
+
+\State Initialize
+\[
+C \gets 0,
+\qquad
+D \gets 0.
+\]
+
+\State Stratify the dataset according to the joint levels of the conditioning variable(s) $\mathcal{C}$.
+\State Let $n$ denote the number of resulting strata.
+
+\For{$l = 1,\ldots,n$}
+
+    \State Let $\mathcal{D}_l$ denote the observations in stratum $l$.
+
+    \If{$\mathcal{D}_l$ contains fewer than two observations}
+        \State Skip stratum $l$.
+    \EndIf
+
+    \State Construct the contingency table of $A$ and $B$ within stratum $l$.
+
+    \If{the contingency table has fewer than two rows or fewer than two columns}
+        \State Skip stratum $l$.
+    \EndIf
+
+    \State Compute the number of concordant pairs in stratum $l$:
+    \[
+    C_l \gets \#\{\text{concordant pairs in stratum } l\}.
+    \]
+
+    \State Compute the number of discordant pairs in stratum $l$:
+    \[
+    D_l \gets \#\{\text{discordant pairs in stratum } l\}.
+    \]
+
+    \State Update
+    \[
+    C \gets C + C_l,
+    \qquad
+    D \gets D + D_l.
+    \]
+
+\EndFor
+
+\If{$C + D = 0$}
+    \State \Return $\mathrm{NA}$
+\EndIf
+
+\State Compute
+\[
+\gamma_{A \bot B \mid \mathcal{C}}
+\gets
+\frac{C-D}{C+D}.
+\]
+
+\State \Return $\gamma_{A \bot B \mid \mathcal{C}}$
+
+\end{algorithmic}
+\end{breakablealgorithm}
+
+\subsection*{Step 3(a): Elimination of Spurious Local Dependence}
+\begin{breakablealgorithm}
+\caption{Elimination of Spurious Local Dependence}
+\label{alg:LD_eli_algo}
+
+\begin{algorithmic}[1]
+\Require Set of significant local dependence hypotheses from the initial LD screening.
+For each item pair $\{Y_i,Y_{i'}\}$, at most two directional hypotheses can be significant:
+\[
+H_{ii'}^{(i)}:\; Y_i \perp Y_{i'} \mid R_i,
+\qquad
+H_{ii'}^{(i')}:\; Y_i \perp Y_{i'} \mid R_{i'}.
+\]
+Let $\gamma_{ii'}^{(i)}$ and $\gamma_{ii'}^{(i')}$ denote the corresponding partial
+$\gamma$ coefficients, and let $w_{ii'}^{(i)}$ and $w_{ii'}^{(i')}$ denote the
+corresponding numbers of comparable pairs.
+
+\Ensure Reduced set $\mathcal{G}$ of item pairs considered to exhibit genuine local dependence.
+
+\State Initialize the set of active significant directional LD hypotheses:
+\[
+\mathcal{H}
+\gets
+\left\{
+H_{ii'}^{(k)}
+:
+H_{ii'}^{(k)} \text{ is significant},
+\;
+k \in \{i,i'\}
+\right\}.
+\]
+
+\State Initialize the set of genuine LD relations:
+\[
+\mathcal{G} \gets \emptyset.
+\]
+
+\State For each item pair $\{Y_i,Y_{i'}\}$ represented in the initial LD
+screening, compute the pair-level weighted partial gamma
+\[
+WPG_{ii'}
+=
+\frac{
+w_{ii'}^{(i)}\gamma_{ii'}^{(i)}
++
+w_{ii'}^{(i')}\gamma_{ii'}^{(i')}
+}{
+w_{ii'}^{(i)} + w_{ii'}^{(i')}
+}.
+\]
+
+\While{$\mathcal{H} \neq \emptyset$}
+
+    \State Identify all unordered item pairs $\{Y_i,Y_{i'}\}$ represented by at least one
+    hypothesis in the current active set $\mathcal{H}$.
+
+    \State Using only the currently active significant directional hypothesis, partition
+    the represented item pairs into four evidence lists:
+    \[
+    \mathcal{L}_{++}^{(2)}
+    =
+    \left\{
+    \{Y_i,Y_{i'}\}
+    :
+    H_{ii'}^{(i)} \in \mathcal{H},\;
+    H_{ii'}^{(i')} \in \mathcal{H},\;
+    \gamma_{ii'}^{(i)} > 0,\;
+    \gamma_{ii'}^{(i')} > 0
+    \right\},
+    \]
+    \[
+    \mathcal{L}_{--}^{(2)}
+    =
+    \left\{
+    \{Y_i,Y_{i'}\}
+    :
+    H_{ii'}^{(i)} \in \mathcal{H},\;
+    H_{ii'}^{(i')} \in \mathcal{H},\;
+    \gamma_{ii'}^{(i)} < 0,\;
+    \gamma_{ii'}^{(i')} < 0
+    \right\},
+    \]
+    \[
+    \mathcal{L}_{+}^{(1)}
+    =
+    \left\{
+    \{Y_i,Y_{i'}\}
+    :
+    \text{exactly one of }
+    H_{ii'}^{(i)},H_{ii'}^{(i')}
+    \text{ is in } \mathcal{H}
+    \text{ and its partial } \gamma \text{ is positive}
+    \right\},
+    \]
+    \[
+    \mathcal{L}_{-}^{(1)}
+    =
+    \left\{
+    \{Y_i,Y_{i'}\}
+    :
+    \text{exactly one of }
+    H_{ii'}^{(i)},H_{ii'}^{(i')}
+    \text{ is in } \mathcal{H}
+    \text{ and its partial } \gamma \text{ is negative}
+    \right\}.
+    \]
+
+    \State First, consider pairs with two active significant partial correlations:
+    \[
+    \mathcal{L}^{(2)}
+    =
+    \mathcal{L}_{++}^{(2)}
+    \cup
+    \mathcal{L}_{--}^{(2)}.
+    \]
+
+    \If{$\mathcal{L}^{(2)} \neq \emptyset$}
+        \State Select the pair with the largest absolute weighted partial gamma among
+        pairs with two active significant partial correlations:
+        \[
+        \{Y_a,Y_b\}
+        =
+        \arg\max_{\{Y_i,Y_{i'}\}\in \mathcal{L}^{(2)}}
+        \left|WPG_{ii'}\right|.
+        \]
+    \Else
+        \State Select the pair with the largest absolute weighted partial gamma among
+        pairs with only one active significant partial correlation:
+        \[
+        \{Y_a,Y_b\}
+        =
+        \arg\max_{\{Y_i,Y_{i'}\}\in
+        \mathcal{L}_{+}^{(1)}\cup\mathcal{L}_{-}^{(1)}}
+        \left|WPG_{ii'}\right|.
+        \]
+    \EndIf
+
+    \State Add the selected item pair to the set of genuine LD relations:
+    \[
+    \mathcal{G}
+    \gets
+    \mathcal{G} \cup \{\{Y_a,Y_b\}\}.
+    \]
+
+    \State Remove from the active hypothesis set, all directional LD hypotheses whose
+    rest-score is defined by either of the selected items:
+    \[
+    \mathcal{H}
+    \gets
+    \mathcal{H}
+    \setminus
+    \left\{
+    H_{ii'}^{(k)} \in \mathcal{H}
+    :
+    k \in \{a,b\}
+    \right\}.
+    \]
+
+    \State Thus, if an item pair previously had two active significant directional
+    hypotheses, but only one of them remains after this removal, the pair may be
+    reconsidered in a later iteration in either
+    $\mathcal{L}_{+}^{(1)}$ or $\mathcal{L}_{-}^{(1)}$.
+
+\EndWhile
+
+\State \Return $\mathcal{G}$
+
+\end{algorithmic}
+\end{breakablealgorithm}
+
+\subsection*{Step 3(b): Elimination of Spurious DIF Sources}
+\begin{breakablealgorithm}
+\caption{Elimination of Spurious DIF Sources for Item $Y_i$}
+\label{alg:step3b}
+
+\begin{algorithmic}[1]
+\Require Dataset with item responses and exogenous covariates; item $Y_i$; item set $\mathcal{I}$; initial source set $\mathrm{SOURCE}(Y_i)$; and significance level $\alpha$
+
+\Ensure Final set of genuine DIF sources $\widehat{\mathrm{SOURCE}}(Y_i)$.
+
+\State Compute the total score
+\[
+S = \sum_{Y_k \in \mathcal{I}} Y_k .
+\]
+
+\State Initialize
+\[
+\mathcal{S}_i^{(0)} \gets \mathrm{SOURCE}(Y_i).
+\]
+
+\State Set $t \gets 0$.
+
+\Repeat
+
+    \State Let
+    \[
+    \mathcal{P}_i^{(t)} \gets \mathcal{S}_i^{(t)},
+    \]
+    denote the source set used during the current pass.
+
+    \State Set
+    \[
+    X_{\mathrm{drop}} \gets \emptyset,
+    \qquad
+    p_{\mathrm{drop}} \gets -\infty .
+    \]
+
+    \ForAll{$X_j \in \mathcal{P}_i^{(t)}$}
+
+        \State Use Algorithm~\ref{alg:mc_cond_independence} to test
+        \[
+        H_0:
+        Y_i \perp X_j
+        \mid
+        S,\,
+        \mathcal{P}_i^{(t)} \setminus \{X_j\}.
+        \]
+
+        \State Let $p_j^{(t)}$ denote the corresponding $p$-value.
+
+        \If{$p_j^{(t)} > \alpha$ and $p_j^{(t)} > p_{\mathrm{drop}}$}
+            \State Set
+            \[
+            X_{\mathrm{drop}} \gets X_j,
+            \qquad
+            p_{\mathrm{drop}} \gets p_j^{(t)} .
+            \]
+        \EndIf
+
+    \EndFor
+
+    \If{$X_{\mathrm{drop}} = \emptyset$}
+        \State Stop the elimination procedure.
+    \Else
+        \State Remove the non-significant source with the highest $p$-value found in the current pass:
+        \[
+        \mathcal{S}_i^{(t+1)}
+        \gets
+        \mathcal{S}_i^{(t)}
+        \setminus
+        \{X_{\mathrm{drop}}\}.
+        \]
+
+        \State Set $t \gets t+1$.
+    \EndIf
+
+\Until{no source is removed or $\mathcal{S}_i^{(t)} = \emptyset$}
+
+\State Set
+\[
+\widehat{\mathrm{SOURCE}}(Y_i)
+\gets
+\mathcal{S}_i^{(t)} .
+\]
+
+\State \Return $\widehat{\mathrm{SOURCE}}(Y_i)$
+
+\end{algorithmic}
+\end{breakablealgorithm}
+
+\subsection*{Monte Carlo Approximation of Conditional Independence Tests}
+Algorithms~\ref{alg:step3b} and \ref{alg:step4} both rely on the following Monte Carlo test of conditional independence, which is also used directly in Step 3(c).
+
+\begin{breakablealgorithm}
+\caption{Monte Carlo approximation of the $p$-value for a conditional independence test}
+\label{alg:mc_cond_independence}
+
+\begin{algorithmic}[1]
+\Require Dataset with item responses and exogenous covariates; variables $Y_i$ and $X_j$; conditioning variables $\mathcal{C}$; number of Monte Carlo samples $B$
+
+\Ensure Observed partial $\gamma$ coefficient and Monte Carlo $p$-value for testing
+\[
+H_0: Y_i \perp X_j \mid \mathcal{C}.
+\]
+
+\State Restrict the dataset to complete cases on
+$\{Y_i, X_j\} \cup \mathcal{C}$.
+
+\State Use Algorithm~\ref{alg:part_gam} to compute the observed partial gamma coefficient
+\[
+\widehat{\gamma}_{obs}
+=
+\gamma_{Y_i \bot X_j \mid \mathcal{C}}.
+\]
+
+\State Create a stratification variable by taking the joint levels of the conditioning variables $\mathcal{C}$.
+
+\State Remove all strata with fewer than two observations.
+
+\State Remove all strata in which either $Y_i$ or $X_j$ has no variation.
+
+\State Recompute the stratum sizes and again remove strata with fewer than two observations.
+
+\If{no usable strata remain}
+    \State \Return $(\widehat{\gamma}_{obs}, \mathrm{NA})$
+\EndIf
+
+\State Define the conditional independence test
+\[
+H_0:
+Y_i \perp X_j \mid \text{strata}.
+\]
+
+\State Using the conditional independence framework implemented in \texttt{coin},
+construct the test statistic for association between $Y_i$ and $X_j$ conditional
+on the strata.
+
+\State Approximate the conditional null distribution of the test statistic by drawing
+$B$ Monte Carlo samples from the null distribution, where permutations are
+performed conditionally within strata.
+
+\State Let $T_{obs}$ denote the observed test statistic, and let
+\[
+T^{(1)},\ldots,T^{(B)},
+\]
+denote the Monte Carlo samples from the conditional null distribution.
+
+\State Compute the two-sided Monte Carlo $p$-value as the proportion of sampled null
+statistics at least as extreme as the observed statistic:
+\[
+p
+=
+\frac{1}{B}
+\sum_{b=1}^{B}
+\mathbf{1}
+\left(
+|T^{(b)}| \geq |T_{obs}|
+\right).
+\]
+
+\State \Return $(\widehat{\gamma}_{obs}, p)$
+
+\end{algorithmic}
+\end{breakablealgorithm}
+
+\subsection*{Step 4: Structural Screening of Covariates}
+\begin{breakablealgorithm}
+\caption{Step 4 structural screening}
+\label{alg:step4}
+\begin{algorithmic}[1]
+\Require Dataset with item responses and candidate covariates;
+significance level \(\alpha\); number of Monte Carlo samples \(B\)
+\Ensure Final set of covariates which satisfy criterion validity. 
+\State Compute the total score \(S\) as the row sum of the item responses.
+\State Let \(\mathcal{C}\) be the set of candidate covariates.
+\State Let \(\mathcal{R} \gets \emptyset\) be the set of removed covariates.
+
+\While{\(\mathcal{C}\) is not empty}
+    \For{each covariate \(X_j \in \mathcal{C}\)}
+        \State Test
+        \[
+            H_0: S \perp X_j \mid \mathcal{C} \setminus \{X_j\},
+        \]
+        using a conditional partial gamma test
+        \State Store the partial gamma estimate and the corresponding
+        \(p\)-value.
+    \EndFor
+
+    \If{all decision \(p\)-values are less than or equal to \(\alpha\)}
+        \State Stop and retain all covariates in \(\mathcal{C}\).
+    \Else
+        \State Select the covariate \(X_j\) with the highest decision
+        \(p_j > \alpha\).
+        \State Remove \(X_j\) from \(\mathcal{C}\).
+        \State Add \(X_j\) to \(\mathcal{R}\).
+    \EndIf
+\EndWhile
+
+\State \Return retained covariates \(\mathcal{C}\) and removed covariates
+\(\mathcal{R}\)
+\end{algorithmic}
+\end{breakablealgorithm}
