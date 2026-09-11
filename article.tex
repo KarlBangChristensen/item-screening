@@ -254,12 +254,12 @@ For each pair, compute the weighted partial $\gamma$. Use stepwise inclusion for
 
 
 \paragraph{(b) Elimination of spurious evidence for items with more than one
-DIF source.} This step is Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}. Note, importantly, that no source is removed from the source list until all tests have been performed in the current iteration. Furthermore, in line 8 of that algorithm we refer to Algorithm \ref{alg:mc_cond_independence} (also in Appendix~\ref{sec:AppAlgorithms}). Algorithm \ref{alg:mc_cond_independence} is simply a Monte Carlo based method for estimating $p$-values.
+DIF source.} Implemented as Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}; no source is removed from the candidate list until all tests in the current iteration have been performed. Significance is assessed via the Monte Carlo $p$-value procedure of Algorithm \ref{alg:mc_cond_independence} (also in Appendix~\ref{sec:AppAlgorithms}).
 
 \paragraph{(c) Elimination of spurious evidence for sources with an apparent
-DIF effect on more than one item} The elimination algorithm applied in Step 3(c) is very similar to that used in 3(b). In fact, it is the exact same procedure, but instead of eliminating sources of spurious DIF, we eliminate items exhibiting spurious DIF w.r.t. exogenous variables. In other words, we are working with the $DIF(X_i)$ lists instead of the $SOURCE(Y_i)$ lists. Hence, we refer the curious reader to Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms} for the full algorithm.
+DIF effect on more than one item} applies the same elimination procedure as (b), but to the $DIF(X_i)$ lists rather than the $SOURCE(Y_i)$ lists, eliminating items exhibiting spurious DIF with respect to each exogenous variable; see Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}.
 
-\paragraph{Combining (b) and (c).} The order of Step 3(b) and 3(c) does not matter since no final decisions are made until both steps have been performed. When both steps have been performed, we are left with a list of item and exogenous variable pairs, the partial gamma coefficient from testing independence between the pair given score, and possibly other items, and a $p$-value. Furthermore, for the same item and exogenous variable pair, we will have a partial gamma coefficient from the test of conditional independence between the pair given the score and possibly other exogenous variables together with the corresponding $p$-value. And not until now will final conclusions, on whether or not the DIF is genuine or not, be made. DIF will only be accepted as genuine if both $p$-values are significant.
+\paragraph{Combining (b) and (c).} The order of (b) and (c) does not matter, since no final decision is made until both have run. Each item-covariate pair then carries two $p$-values, one from each step, and DIF is accepted as genuine only if both are significant.
 
 \begin{mybox3}
 \begin{example}
@@ -292,10 +292,7 @@ and
 DIF(X)=\{A,C\}, \qquad DIF(Z)=\{A,E\}.
 \]
 
-Step 3(b) investigates each item separately. For each item $Y_i$, we test
-whether each candidate source remains associated with $Y_i$ after conditioning
-on the score and the other candidate sources for that item. Suppose Step 3(b)
-gives the following final result:
+Step 3(b) tests, for each item $Y_i$, whether each candidate source remains associated with $Y_i$ after conditioning on the score and the other candidate sources. Suppose it gives the following result:
 
 \begin{table}[H]
 \centering
@@ -321,10 +318,7 @@ SOURCE^{(3b)}(C)=\{X\}, \quad
 SOURCE^{(3b)}(E)=\{Z\}.
 \]
 
-Step 3(c) investigates each exogenous variable separately. For each covariate
-$X_j$, we test whether each candidate DIF item remains associated with $X_j$
-after conditioning on the score and the other candidate DIF items for that
-covariate. Suppose Step 3(c) gives the following final result:
+Step 3(c) tests, for each covariate $X_j$, whether each candidate DIF item remains associated with $X_j$ after conditioning on the score and the other candidate items. Suppose it gives the following result:
 
 \begin{table}[H]
 \centering
@@ -388,31 +382,30 @@ DIF(X)=\{A\}, \qquad DIF(Z)=\{E\}.
 
 
 \subsection{Association between the score and exogenous covariates}
-Moving away from DIF and LD for a moment, we are now interested in the structural association between the total score and exogenous variables, which we will investigate via backwards elimination search, as per \cite{kreiner-christensen-2011} suggestion. The idea here is to determine which exogenous covariates to retain as structural predictors of the score, which we do by tests of conditional independence between the score and exogenous variables given the remaining set of exogenous variables still retained. 
+We now examine the structural association between the total score and exogenous variables via backwards elimination, as suggested by \cite{kreiner-christensen-2011}: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates.
 
-\paragraph{\textit{Step 4 in practice.}} The general structure of Step 4 is clear from posed screening procedure. The backwards elimination search for exogenous variables associated with the score is implemented as described in Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}. When we determine significance of tests, we do so using the same framework as in Step 3(b) and 3(c), i.e., via the Monte Carlo approximation implemented by Algorithm \ref{alg:mc_cond_independence}.
+\paragraph{\textit{Step 4 in practice.}} The backwards elimination search is implemented as Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}, with significance assessed via the same Monte Carlo approximation (Algorithm \ref{alg:mc_cond_independence}) used in Step 3(b) and 3(c).
 
-Retained covariates are treated as evidence of criterion validity, as they exhibit a significant conditional association with the total score. Dropped covariates, i.e., covariates with non-significant conditional independence tests, are interpreted as not contributing significant additional information towards the score after controlling for other covariates in the candidate set, and should therefore not be included in the final model, as opposed to those we conclude to fulfill the criterion validity. The final result of Step 4 is therefore not just a collection of marginal score and exogenous variable associations. Each retained covariate has survived Algorithm \ref{alg:step4}, and we therefore allow ourselves to conclude that its association with the total score is non-trivial, and the covariate should therefore be included in the initial definition of the GLLRM in later steps.
+Retained covariates are treated as evidence of criterion validity and included in the initial GLLRM; dropped covariates are judged to add no significant information about the score once the other candidates are controlled for, and are excluded.
 
 \subsection{Graphical Rasch model and analysis of global Markov properties
 of $G_{\mathrm{Rasch}}$}
 
-We are now ready to begin the initial construction of the GLLRM by collecting all the information from Step 3 and 4 outputs, and form the graph corresponding to the model, together with its corresponding IRT and moralized marginal graph. 
+We now construct the initial GLLRM by collecting the outputs of Steps 3 and 4 into the corresponding graph, IRT graph, and moralized marginal graph.
 
 \paragraph{\textit{Step 5 in practice}}
-We do not perform any new statistical tests in this step, but simply collect the information passed on from the previous steps and report the structure of the corresponding GLLRM graph. The GLLRM graph is quite straight forward, as we simply collect the genuine LD, genuine DIF, and which exogenous variables satisfy criterion validity with the latent trait. We report which nodes are present and where nodes are connected, beyond the edges connecting items to the latent trait. From this, we can determine how the IRT graph should look as it includes the same edges and nodes, but with item measurement, score association, and DIF edges being directed, while LD edges are undirected. Finally, the moralized marginal graph is obtained by marrying parents, replacing the latent trait with a score node, and including score-to-item edges and edges between all items, all of which are undirected.  
+No new tests are performed; we simply report the structure implied by the genuine LD and DIF edges and the exogenous variables satisfying criterion validity. The GLLRM graph records which nodes are present and connected beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. The moralized marginal graph is obtained by marrying parents, replacing the latent trait with a score node, and adding undirected score-to-item and item-to-item edges.
 
 
 \subsection{Tests of global Markov properties of the GLLRM}
-We are now ready to perform the last round of tests before reporting an initial model. In Step 5, we report a tentative model; now we subject this model to additional conditional independence tests for the otherwise retained DIF and LD in order to investigate if these relations still hold when taking the structure determined in Step 5 into account. In other words, we now check if LD and DIF edges found in Step 5 were only supported due to the simpler conditioning sets. \\
-We perform three types of tests to determine this. For DIF, the tests are of the form
+Before reporting an initial model, we retest the DIF and LD relations retained from Step 5 against the full structure, to check they are not artifacts of the simpler conditioning sets used earlier. For DIF, this is the test
 \begin{align}
     H_0^{C5}: Y_i \perp X_j
     \mid
     S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
     \operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
 \end{align}
-For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibiting, what Step 3 has determined to be genuine LD, we now retest this in the following way: Separate the two pairs in the graph and observe which other LD connections are available from the two. We then consider the sub-score defined by the complement to the relevant sets, and use this to condition on together with other DIF sources for the corresponding LD connections. These are referred to as $C7$ and $C9$ hypothesis \cite{kreiner-christensen-2011}. We allow the LD edge to be retained, if at least one of the two tests are significant. 
+For each genuine LD pair $(Y_a,Y_b)$, we cut the edge between them, condition each item on the sub-score complementary to its remaining LD connections together with its DIF sources, and test both directions ($C7$ and $C9$; \cite{kreiner-christensen-2011}). The edge is retained if at least one direction is significant.
 
 \begin{mybox3}
     \begin{example}
@@ -431,7 +424,7 @@ For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibit
             \caption{Hypothetical tests to determine if DIF edges should be retained.}
             \label{tab:step6_dif_example}
         \end{table}
-        Next, we check if the LD edges should be retained via the following procedure. Take the pair $(A,B)$, cut the edge between the two, and consider the LD connections still available from either one.
+        Next we check whether the LD edges should be retained: take the pair $(A,B)$, cut their edge, and consider the LD connections still available from each item.
         % Temporary removal of LD edge (A,B)
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
