@@ -1,14 +1,5 @@
-% Companion appendix for the AK data set, written to match the style of
-% "Appendix - data example.tex" (the SPADI worked example). To include it
-% in article.tex, add a new appendices block, e.g.:
-%   \begin{appendices}
-%   \section{}\label{sec:AppAK}
-%   \input{Appendix - AK data example}
-%   \end{appendices}
-% It relies on \label{sec:it_sec} and \eqref{C5} from article.tex, so it is
-% meant to be \input from there rather than compiled standalone.
 
-\section*{The AK (Actinic Keratosis) Data: A Worked Example}
+\section{Results}
 
 This appendix applies the item screening procedure of Section~\ref{sec:it_sec} to the AK data set: $99$ respondents who completed the $10$-item AKQoL questionnaire ($Q1$--$Q10$, each scored $0$--$3$), together with two exogenous covariates, sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ cases are complete with respect to items and covariates, so no observations are dropped. The full analysis is reproducible from \texttt{ak\_item\_screening.R}, run with \texttt{twigg} version $0.0.0.9000$ under R $4.2.1$.
 
