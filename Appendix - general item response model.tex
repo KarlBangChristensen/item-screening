@@ -16,4 +16,16 @@ where
 $$
 \alpha_0=-\log\left(\prod_{i=1}^k\sum_{z=0}^M\exp(z\theta+\alpha_{iz})\right)
 $$
-is a normalizing constant that does not depend on the observed data $(\boldsymbol{y},\boldsymbol{x})$, and which reduces to the dichotomous normalizing constant of the main text when $M=1$.
+is a normalizing constant that does not depend on the observed data $(\boldsymbol{y},\boldsymbol{x})$. Note that this reduces to the dichotomous normalizing constant of the main text when $M=1$ and that it $S$ is also sufficient in this general model.
+
+The formula above specifies a log-linear model containing only main effects, and this model is easily extended to include (i) interaction terms between item pairs (to model LD) and (ii) interaction terms between item and exogenous variable pairs (to model DIF). This leads to the following form for the graphical Rasch model for polytomous items 
+\begin{align}
+P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_i+(\star)\Big),
+\end{align}
+where
+\begin{align}
+(\star)=\sum_{i=1}^{n_L}\lambda_i(u_i,v_i)+ \sum_{i=1}^{n_D}\delta_i(a_i,z_i)+\sum_{i=1}^{n_G}\mu_i(g_i).
+\end{align}
+Here $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{kreiner-christensen-2011}. 
+
+Note that $S$ is also sufficient for $\theta$ in this model.
