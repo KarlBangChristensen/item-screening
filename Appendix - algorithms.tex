@@ -281,7 +281,7 @@ S = \sum_{Y_k \in \mathcal{I}} Y_k .
 
     \ForAll{$X_j \in \mathcal{P}_i^{(t)}$}
 
-        \State Use Algorithm~\ref{alg:mc_cond_independence} to test
+        \State Use Algorithm~\ref{alg:part_gam} to compute the asymptotic partial gamma test of
         \[
         H_0:
         Y_i \perp X_j
@@ -332,89 +332,14 @@ S = \sum_{Y_k \in \mathcal{I}} Y_k .
 \end{algorithmic}
 \end{breakablealgorithm}
 
-\subsection*{Monte Carlo Approximation of Conditional Independence Tests}
-Algorithms~\ref{alg:step3b} and \ref{alg:step4} both rely on the following Monte Carlo test of conditional independence, which is also used directly in Step 3(c).
-
-\begin{breakablealgorithm}
-\caption{Monte Carlo approximation of the $p$-value for a conditional independence test}
-\label{alg:mc_cond_independence}
-
-\begin{algorithmic}[1]
-\Require Dataset with item responses and exogenous covariates; variables $Y_i$ and $X_j$; conditioning variables $\mathcal{C}$; number of Monte Carlo samples $B$
-
-\Ensure Observed partial $\gamma$ coefficient and Monte Carlo $p$-value for testing
-\[
-H_0: Y_i \perp X_j \mid \mathcal{C}.
-\]
-
-\State Restrict the dataset to complete cases on
-$\{Y_i, X_j\} \cup \mathcal{C}$.
-
-\State Use Algorithm~\ref{alg:part_gam} to compute the observed partial gamma coefficient
-\[
-\widehat{\gamma}_{obs}
-=
-\gamma_{Y_i \bot X_j \mid \mathcal{C}}.
-\]
-
-\State Create a stratification variable by taking the joint levels of the conditioning variables $\mathcal{C}$.
-
-\State Remove all strata with fewer than two observations.
-
-\State Remove all strata in which either $Y_i$ or $X_j$ has no variation.
-
-\State Recompute the stratum sizes and again remove strata with fewer than two observations.
-
-\If{no usable strata remain}
-    \State \Return $(\widehat{\gamma}_{obs}, \mathrm{NA})$
-\EndIf
-
-\State Define the conditional independence test
-\[
-H_0:
-Y_i \perp X_j \mid \text{strata}.
-\]
-
-\State Using the conditional independence framework implemented in \texttt{coin},
-construct the test statistic for association between $Y_i$ and $X_j$ conditional
-on the strata.
-
-\State Approximate the conditional null distribution of the test statistic by drawing
-$B$ Monte Carlo samples from the null distribution, where permutations are
-performed conditionally within strata.
-
-\State Let $T_{obs}$ denote the observed test statistic, and let
-\[
-T^{(1)},\ldots,T^{(B)},
-\]
-denote the Monte Carlo samples from the conditional null distribution.
-
-\State Compute the two-sided Monte Carlo $p$-value as the proportion of sampled null
-statistics at least as extreme as the observed statistic:
-\[
-p
-=
-\frac{1}{B}
-\sum_{b=1}^{B}
-\mathbf{1}
-\left(
-|T^{(b)}| \geq |T_{obs}|
-\right).
-\]
-
-\State \Return $(\widehat{\gamma}_{obs}, p)$
-
-\end{algorithmic}
-\end{breakablealgorithm}
-
 \subsection*{Step 4: Structural Screening of Covariates}
 \begin{breakablealgorithm}
 \caption{Step 4 structural screening}
 \label{alg:step4}
 \begin{algorithmic}[1]
 \Require Dataset with item responses and candidate covariates;
-significance level \(\alpha\); number of Monte Carlo samples \(B\)
-\Ensure Final set of covariates which satisfy criterion validity. 
+significance level \(\alpha\)
+\Ensure Final set of covariates which satisfy criterion validity.
 \State Compute the total score \(S\) as the row sum of the item responses.
 \State Let \(\mathcal{C}\) be the set of candidate covariates.
 \State Let \(\mathcal{R} \gets \emptyset\) be the set of removed covariates.
@@ -425,7 +350,7 @@ significance level \(\alpha\); number of Monte Carlo samples \(B\)
         \[
             H_0: S \perp X_j \mid \mathcal{C} \setminus \{X_j\},
         \]
-        using a conditional partial gamma test
+        using an asymptotic conditional partial gamma test
         \State Store the partial gamma estimate and the corresponding
         \(p\)-value.
     \EndFor
