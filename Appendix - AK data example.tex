@@ -1,0 +1,148 @@
+% Companion appendix for the AK data set, written to match the style of
+% "Appendix - data example.tex" (the SPADI worked example). To include it
+% in article.tex, add a new appendices block, e.g.:
+%   \begin{appendices}
+%   \section{}\label{sec:AppAK}
+%   \input{Appendix - AK data example}
+%   \end{appendices}
+% It relies on \label{sec:it_sec} and \eqref{C5} from article.tex, so it is
+% meant to be \input from there rather than compiled standalone.
+
+\section*{The AK (Actinic Keratosis) Data: A Worked Example}
+
+This appendix applies the item screening procedure of Section~\ref{sec:it_sec} to the AK data set: $99$ respondents who completed the $10$-item AKQoL questionnaire ($Q1$--$Q10$, each scored $0$--$3$), together with two exogenous covariates, sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ cases are complete with respect to items and covariates, so no observations are dropped. The full analysis is reproducible from \texttt{ak\_item\_screening.R}, run with \texttt{twigg} version $0.0.0.9000$ under R $4.2.1$.
+
+\subsection{Step 1}
+M2 passes: every item is positively related to its rest-score, the weakest being $Q9$ ($\gamma=0.078$). M1 and M3 both flag $Q9$. M1 fails because the pairwise item association $(Q5,Q9)$ is negative ($\gamma=-0.168$); all other $\binom{10}{2}-1$ pairs are non-negative. M3 fails overall, but passes per covariate for \texttt{Alder} (consistently negative direction with the score and all items, score $\gamma=-0.164$) and fails only for \texttt{woman}, whose association with $Q9$ ($\gamma=-0.121$) has the opposite sign to its association with the score ($\gamma=0.338$); all other items agree in sign with the score. As the inconsistency in each check is isolated to item $Q9$, we proceed to Step 2.
+
+\subsection{Step 2}
+Controlling for the FDR with Benjamin--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Item & Source & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
+\midrule
+$Q4$ & Alder & $0.383$ & $0.0031$ & $0.062$ & . \\
+$Q5$ & woman & $0.727$ & $0.0008$ & $0.017$ & * \\
+\bottomrule
+\end{tabular}
+\caption{Initial evidence of DIF (Step 2).}
+\label{tab:ak_step2_dif}
+\end{table}
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llcccc@{}}
+\toprule
+Item 1 & Item 2 & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
+\midrule
+$Q5$  & $Q6$  & $0.650$  & $0.0005$ & $0.046$ & * \\
+$Q3$  & $Q9$  & $-0.588$ & $0.0003$ & $0.026$ & * \\
+$Q6$  & $Q9$  & $-0.629$ & $0.0004$ & $0.036$ & * \\
+$Q3$  & $Q10$ & $-0.755$ & $<0.0001$ & $<0.0001$ & *** \\
+\bottomrule
+\end{tabular}
+\caption{Initial evidence of LD (Step 2), flagged in at least one conditioning direction.}
+\label{tab:ak_step2_ld}
+\end{table}
+
+\subsection{Step 3}
+\subsubsection{Step 3(a)}
+The stepwise inclusion algorithm accepts $(Q3,Q10)$ (weighted partial $\gamma=-0.694$) and $(Q5,Q6)$ (weighted partial $\gamma=0.494$) as genuine LD. The remaining candidates, $(Q3,Q9)$ and $(Q6,Q9)$, are disregarded as spurious once $Q3$ and $Q6$ are used to define the rest-scores for the accepted pairs -- consistent with $Q9$'s already anomalous behaviour in Step 1.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llc@{}}
+\toprule
+Item 1 & Item 2 & weighted partial $\gamma$ \\
+\midrule
+$Q3$ & $Q10$ & $-0.694$ \\
+$Q5$ & $Q6$  & $0.494$ \\
+\bottomrule
+\end{tabular}
+\caption{Genuine LD pairs after the Step 3(a) inclusion algorithm.}
+\label{tab:ak_step3a}
+\end{table}
+
+\subsubsection{Step 3(b) and 3(c)}
+Each flagged item has exactly one candidate DIF source and each source only one candidate item, so the elimination algorithms of Step 3(b)/(c) have nothing to condition away: both relations from Step 2 pass through unchanged and are carried forward as candidate genuine DIF.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Item & Source & partial $\gamma$ & $p$ & Conclusion \\
+\midrule
+$Q4$ & Alder & $0.383$ & $0.0031$ & DIF \\
+$Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
+\bottomrule
+\end{tabular}
+\caption{Result of combining Step 3(b) and 3(c) (asymptotic $p$-values, both conditioning sets are $S$).}
+\label{tab:ak_step3bc}
+\end{table}
+
+\subsection{Step 4}
+Backward elimination retains \texttt{woman} and drops \texttt{Alder} as a structural predictor of the score.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lcccl@{}}
+\toprule
+Covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.C.V. \\
+\midrule
+woman & $0.357$ & $0.017$ & Alder & TRUE \\
+Alder & $-0.054$ & $0.693$ & woman & FALSE \\
+\midrule
+woman (final) & $0.338$ & $0.008$ & None & TRUE \\
+\bottomrule
+\end{tabular}
+\caption{Step 4 backward elimination search. $\mathcal{C}$ is the conditioning set; S.C.V.\ abbreviates ``supports criterion validity''.}
+\label{tab:ak_step4}
+\end{table}
+
+\subsection{Step 5}
+Collecting the Step 3 and Step 4 results gives the tentative GLLRM: a measurement edge $\theta\to Q_i$ for each item, a score association \texttt{woman}$\,\to\theta$, DIF edges Alder$\,\to Q4$ and woman$\,\to Q5$, and LD edges $(Q3,Q10)$ and $(Q5,Q6)$. Because \texttt{Alder} was dropped in Step 4, it enters the graph only through its DIF edge on $Q4$ and has no direct association with $\theta$.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+From & To & Edge type \\
+\midrule
+$\theta$ & $Q1,\dots,Q10$ & measurement \\
+woman & $\theta$ & score association \\
+Alder & $Q4$ & DIF \\
+woman & $Q5$ & DIF \\
+$Q3$ & $Q10$ & local dependence \\
+$Q5$ & $Q6$ & local dependence \\
+\bottomrule
+\end{tabular}
+\caption{Step 5 IRT graph edges (\texttt{build\_gllrm\_graph} / \texttt{build\_irt\_graph}).}
+\label{tab:ak_step5}
+\end{table}
+
+\subsection{Step 6}
+The retained DIF and LD edges are retested under the conditioning sets implied by the Step 5 graph. For DIF this is the $C5$ hypothesis of \eqref{C5}; for each LD pair the two $C7$/$C9$ hypotheses are tested, with an edge kept if at least one is significant.
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}llccl@{}}
+\toprule
+Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
+\midrule
+Alder $\to Q4$ & $C5$ & $0.383$ & $0.051$ & Removed \\
+woman $\to Q5$ & $C5$ & $0.727$ & $0.032$ & Retained \\
+\bottomrule
+\end{tabular}
+\caption{Step 6 retesting of the Step 5 DIF edges (\texttt{step6\_check\_gllrm}).}
+\label{tab:ak_step6_dif}
+\end{table}
+\begin{table}[H]
+\centering
+\begin{tabular}{@{}lccccl@{}}
+\toprule
+Edge & $C7$: $\gamma$ & $C7$: $p$ & $C9$: $\gamma$ & $C9$: $p$ & Decision \\
+\midrule
+$Q3$--$Q10$ & $-0.611$ & $0.0085$ & $-0.755$ & $0.0002$ & Retained \\
+$Q5$--$Q6$  & $0.765$  & $0.017$  & $0.362$  & $0.275$  & Retained \\
+\bottomrule
+\end{tabular}
+\caption{Step 6 retesting of the Step 5 LD edges. An edge is retained if at least one of $C7$/$C9$ is significant.}
+\label{tab:ak_step6_ld}
+\end{table}
+The DIF edge Alder$\,\to Q4$ fails its $C5$ test ($p=0.051$) and is removed, along with the moralized-graph edge it implied; woman$\,\to Q5$ is retained. Both LD pairs survive, each with at least one significant conditioning direction. The final GLLRM for the AK data therefore retains all $10$ items, one genuine DIF effect (woman on $Q5$), two genuine LD pairs ($Q3$--$Q10$ and $Q5$--$Q6$), and one score-covariate association (woman); despite an initial signal in Steps 1--3, \texttt{Alder} shows no surviving effect once the full screening procedure is applied.
