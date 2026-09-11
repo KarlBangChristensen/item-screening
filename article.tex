@@ -382,9 +382,7 @@ DIF(X)=\{A\}, \qquad DIF(Z)=\{E\}.
 
 
 \subsection{Association between the score and exogenous covariates}
-We now examine the structural association between the total score and exogenous variables via backwards elimination, as suggested by \cite{kreiner-christensen-2011}: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates.
-
-\paragraph{\textit{Step 4 in practice.}} The backwards elimination search is implemented as Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}, with significance assessed via the same Monte Carlo approximation (Algorithm \ref{alg:mc_cond_independence}) used in Step 3(b) and 3(c).
+We examine the structural association between the total score and exogenous variables via backwards elimination: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates. This is outlined in Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}.
 
 Retained covariates are treated as evidence of criterion validity and included in the initial GLLRM; dropped covariates are judged to add no significant information about the score once the other candidates are controlled for, and are excluded.
 
