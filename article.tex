@@ -106,26 +106,28 @@ Questionnaires and tests are widely used to measure health, abilities, and exper
 
 Among these are the assumptions that there is no local dependence \cite[LD]{lazarsfeld-henry-1968} and that there is no differential item functioning \cite[DIF]{holland-wainer-2012}.
 
-Briefly, local independence means that items are only correlated through the latent trait that the instrument measures \cite{lord-novick-1968} and DIF that repsondents from different groups who have the same level of the latent variable have different response distributions on an item.
+Briefly, local independence means that items are only correlated through the latent trait that the instrument measures \cite{lord-novick-1968} and DIF that respondents from different groups who have the same level of the latent variable have different response distributions on an item.
 
 Graphical Rasch models \cite{kreiner-christensen-2002,kreiner-christensen-2004,kreiner-christensen-2007} provide a framework for including item dependencies and differential item functioning. This class of models does not satisfy all measurement requirements, but offers a realistic and practically useful representation of empirical data \cite{kreiner-2007}. 
 
 Identifying explicit violations of the Rasch model requirements based on empirical data is essential. Each item pair can be tested for LD using several available methods \cite[pp. 179-80]{christensen-et-al-2017}. Similarly, several statistical tests exist that can evaluate of DIF for each combination of an item and a covariate \cite{zumbo-1999}.
 
-In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2012} discuss two central testing approaches: conditional likelihood ratio tests \cite{kelderman-1984} and a simple non-parametric test that does not require specialized Rasch software \cite[pp. 1250-1]{kreiner-christensen-2004}. These also apply to tests of DIF.
+In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2012} discuss two testing approaches: conditional likelihood ratio tests \citep{kelderman-1984} and a simple non-parametric test that does not require specialized Rasch software \cite[pp. 1250-1]{kreiner-christensen-2004}. These approaches also apply to tests of DIF.
 
 The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \cite{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure. 
 
 \subsection{Models for measurement}\label{sec:models_measurement}
 
-The Rasch model describes the relationship between a latent trait, denoted $\theta$, and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. The latent trait $\theta$ is the quantity or trait that the instrument intends to measure. The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$;
-(iii) Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
+Let $\Theta$ denote the latent trait that the instrument intends to measure. The Rasch model describes the relationship between this trait and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. Let $\boldsymbol{X}=(X_i)_{i=1,\ldots,m}$ denote a set of covariates. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. 
+
+The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$; (iii) Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
 $$
 P(Y_i=y|\theta)=\frac{\exp(y(\theta+\alpha_{i}))}{1+\exp(\theta+\alpha_{i})}
 $$
-The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing.
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing. Interpreting $-\alpha_i$ as the item location is often useful.
 
 \subsubsection{Notation}
+
 For each participant total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-scores as $R_i=S-Y_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we define sub-scores $S_B=\sum_{Y_i\in B}Y_i$.
 
 \subsubsection{The graphical Rasch Model}
@@ -140,13 +142,19 @@ $$
 $$
 is a normalizing constant that does not depended on the observed data $(\boldsymbol{y},\boldsymbol{x})$. It is a consequence of (\ref{eq:sufficient}) that $S$ is sufficient for $\theta$. This is feature that makes the Rasch model stand out from other models for measurement. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
 
-\subsubsection{Adding LD and DiF}
+\subsubsection{Adding LD and DIF}
 
-The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this makes it easy to include (i) interaction terms between item pairs to model LD and (ii) to include interaction terms between item and exogenous variable pairs to model DIF DIF. This leads to the following form for the GLLRM for polytomous items 
+The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this model is easily extended to include (i) interaction terms between item pairs (to model LD) and (ii) interaction terms between item and exogenous variable pairs (to model DIF). This leads to the following form for the graphical Rasch model for dichotomous items
+
 \begin{align}
-    P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_i+\sum_{i=1}^{n_L}\lambda_i(u_i,v_i)\\+ \sum_{i=1}^{n_D}\delta_i(a_i,z_i)+\sum_{i=1}^{n_G}\mu_i(g_i)\Big),
+P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_iy_i+(\star)\Big),
+\label{eq:also-sufficient}
 \end{align}
-where $n_D$ denotes the total number of DIF pairs $D=(D_1,\dots,D_{n_D})$ with $D_i=(A_i,Z_i)$, where $A_i\in\{Y_1,\dots,Y_k\}$, and $Z_i\in\{X_1,\dots,X_m\}$ is a source of DIF for $A_i$. $n_L$ denotes the total set of LD pairs with $L=(L_1,\dots,L_{n_L})$ with $L_i=(U_i,V_i)\subset \{Y_1,\dots,Y_k\}$. Lastly, $n_G$ is the total set of interactions with more complex DIF or LD structure, $G=(G_1,\dots,G_{n_G})$ with $G_i\subset \{Y_1,\dots,Y_k,X_1,\dots,X_m\}$ \cite{kreiner-christensen-2011}. 
+where
+\begin{align}
+(\star)=\sum_{i=1}^{k}\sum_{j>i}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}\delta_{il}y_ix_l
+\end{align}
+with $\lambda_{ij}$ is an indicator of LD for the item pair $(i,j)$ and with $\delta_{il}$ is an indicator of DIF for the item $Y_i$ with respect to covariate $X_l$. It is seen from (\ref{eq:also-sufficient}) that $S$ is also sufficient for $\theta$ in this more general model.
 
 \subsubsection{Representation as graph}
 
@@ -154,7 +162,7 @@ The model can be represented as a graph where items and covariates are represent
 
 \begin{mybox3}
 \begin{example}
-Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(X_1,X_2), (X_3,X_4), (X_1,X_4)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
+For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(X_1,X_2)$ and $(X_1,X_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
 
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
@@ -183,161 +191,76 @@ Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous cov
 
 \end{tikzpicture}
 \end{center}
+
+Here
+
+\begin{align}
+P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^4\alpha_iy_i+(\star)\Big),
+\label{eq:also-sufficient}
+\end{align}
+where
+\begin{align}
+(\star)=\lambda_{12}y_1y_2+\lambda_{14}y_1y_4 +\delta_{21}y_2x_l+\delta_{22}y_2x_2
+\end{align}
+
 \end{example}
 \end{mybox3}
 
+\section{Methods}
 
+This section describes the item screening procedure. Assume that $V(\Theta)>0$ and make three choices: (i) an association measure and a partial association measure; (ii) a way to calculate $p$-values; (iii) a way to adjust for multiple testing.
 
+Re (i): Analyses below use $\gamma$ \cite{goodman-kruskal-1954} and partial $\gamma$ \cite{davis-1967}. Details about how to compute these are in Appendix \ref{sec:App-gamma}. Re (ii): Analyses below use asymptotic $p$-values, but Monte Carlo $p$-values \cite{north-2002} may be a better choice. Re (iii): Analyses below uses the method suggested by Benjamini and Hochberg \citeyearpar{benjamini-hochberg-1995}, but other methods can also be used. Details about how to compute these are in Appendix \ref{sec:App-multiple-testing}.
 
+\subsection{Analysis of consistency} 
 
+\subsubsection{M1} 
 
+Test that there is a positive correlation between any pair of items. 
 
-\section{Item Screening}\label{sec:it_sec}
-The posed item screening we are implementing is to be found, described in Table 5 in \cite{kreiner-christensen-2011}, but we will include it here for completeness.
+\subsubsection{M2} 
 
-\begin{table}[ht]
-\centering
-\renewcommand{\arraystretch}{1.3}
-\begin{tabular}{@{}p{1.5cm}p{11cm}p{3cm}@{}}
-\toprule
-Step 1 &
-Analysis of consistency \\
-Step 2 &
-Analysis of DIF and LD  \\
-Step 3 &
-(a) Elimination of spurious evidence of LD \\
-&
-(b) Elimination of spurious evidence for items with more than one
-DIF source by tests of
-$Y_i \perp X_j \mid S,\mathrm{Source}(Y_i)$ \\
-&
-(c) Elimination of spurious evidence for sources with an apparent
-DIF effect on more than one item by tests of
-$Y_i \perp X_j \mid S,\mathrm{DIF}(X_j)$ \\
-Step 4 &
-Analysis of the association between the score and exogenous covariates \\
-Step 5 &
-Definition of a GLLRM and analysis of the global Markov properties
-of $G_{\mathrm{Rasch}}$\\
-Step 6 &
-Tests of global Markov properties of the GLLRM \\
-\bottomrule
-\end{tabular}
-\caption{The strategy for item screening presented in paper by \cite{kreiner-christensen-2011}.}
-\label{tab:item_screening_guide}
-\end{table}
+Test that any item $Y_a$ is positively related to its corresponding rest-score $R_a$, and all sub-scores $S_B$, where $Y_a\not\in B$.
 
-\subsection{Under the Hood of the Item Screening Procedure and How It Is Implemented}
-A lot of information is embedded within Table \ref{tab:item_screening_guide}, while we refer the reader to \cite{kreiner-christensen-2011} for a full derivation of the procedure, we will now unfold the steps, argue how we understand each one, and how the methods we use are implemented in the package. 
+\subsubsection{M3} 
 
-\subsubsection{Step 0: A Note on Pre-Processing}
-What do we do with missing values? One possibility is simply to throw away all observations that contain one or more missing values. When we encounter missing values in item responses we cannot compute total scores and therefore no rest-scores, which means we won't be able to test for DIF and LD, and the list of problems this entails goes on. However, it seems overkill to throw an entire observation away because a participant forgot to note their gender when filling out the questionnaire. The main goal of the pre-processing we force upon the data, after any user has processed the data themselves, is to keep as many observations when performing the different tests as possible. In all the steps we are working with item scores, so we need these to be complete; therefore, this is fairly strict. However, the distribution of missing observations in exogenous variables might lead to an even thinner dataset if we also throw away these data points. Hence, we will only do so per exogenous variable. Meaning when we screen for DIF, we do so on a subset of the dataset that considers complete cases with respect to all items and the one exogenous variable only. This way we ensure as many observations as possible are used in each step, without introducing any new information to the data. 
+Test that any exogenous variable $X_l$ that is positively related to $\Theta$ is also positively related to the total score $S$, to all sub-scores, $S_A$, and to all item responses $Y_i$. 
 
+\subsection{Analysis of LD and DIF}
 
-\subsubsection{Step 1} In this initial step of the item screening, we are only concerned with associations. Association between variables can be interpreted many ways, but the objective is simply to determine the relationship between variables. We choose to work with the partial gamma coefficient as per \citet{kreiner-christensen-2011}, but other measures are also possible. We use this association measure to check whether the data fulfill the three necessary assumptions M1, M2, and M3. \\
-\textbf{M1} demands the chosen measure of association is strictly non-negative between all pairs of items in the data set. \\
-\textbf{M2} demands that any item $Y_a$ is positively related to its corresponding rest-score $R_a$, and all sub-scores $S_B$, where $Y_a\not\in B$. \\
-\textbf{M3} demands that if an exogenous variable $X$ is positively related to the latent, person-specific, variable $\theta$, then $X$ will also be positively related to the total score $S$, all sub-scores, $S_A$, and all item responses $Y_i$. 
+Use partial association coefficients to flag all item pairs exhibiting LD and all pairs of an item and a covariate that exhibit DIF. Test hypotheses of the form
 
-\paragraph{\textit{Step 1 in practice.}} In all of the consistency checks necessary in step 1, we are at no point controlling for a third variable; hence, the partial gamma coefficients are simply Goodman and Kruskal's gamma. M1 and M2 does not leave much haggling to be done, so in these two checks we simply compute the partial gamma coefficients, check they are all non-negative and note a successful pass if so. M3 states that, if an exogenous variable $X$ is positively related to $\theta$, then it will also be positively related to $S$, all $S_A$, and all $Y_i$. We interpret this as a demand which also must hold with reverse sign. Meaning that the direction of association between an exogenous variable $X$ and all items $Y_i$ must be the same as the direction of association between the same exogenous variable $X$ and the total score $S$. Hence, we investigate this assumption by computing the partial gamma coefficient between $X_j$ and $S$, and check that the direction of association between $X_j$ and $Y_i$ for $j=1,\dots,m$ is the same, for all $i=1,\dots, k$. If so, we note a successful pass of M3. Naturally, if the data passes M1, M2, and M3 we are happy and can safely move onto the next step. If the data fails any of these checks, we should re-evaluate our data and consider if we want to continue with the item screening. 
-
-
-
-\subsubsection{Step 2}
-In this step, we begin the analysis of DIF and LD. We use the partial gamma coefficient to flag all item pairs exhibiting LD and all item and exogenous variable pairs that experience DIF. We test for these two things via hypotheses of the form
 \begin{align*}
     H_0^{DIF}: Y_i \bot X_j  \mid S \qquad \text{and} \qquad H_0^{LD}:Y_i \bot Y_{i'} \mid R_i,
 \end{align*}
-\cite{kreiner-christensen-2011}. Rejecting the null if the corresponding asymptotic $p$-value of the partial gamma coefficient, after controlling for multiple testing using the Benjamin-Hochberg procedure, is below $0.05$. The exact way we compute the partial gamma coefficient for the two types of tests is described in Algorithm \ref{alg:part_gam} in Appendix~\ref{sec:AppAlgorithms}. In the algorithm, $A$ and $B$ are arbitrary variables, but naturally they correspond to distinct items; if we check for LD and if we check for DIF, one is an item and one is an exogenous variable. All rejected tests are flagged and we move onto the next step.
+
+rejecting when the corresponding $p$-value is below $0.05$ after controlling for multiple testing.
+
+\subsection{Elimination of spurious evidence }
+
+This third step filters out spurious evidence for LD and DIF. This is done in the steps (a), (b) and (c) outlined below.
+
+\paragraph{(a) Elimination of spurious evidence of LD.} From the initial LD screening in step 2, we look at all flagged evidence of LD and create four lists:
+
+\begin{enumerate}
+\item[(i)] item pairs with two significant positive partial $\gamma$ coefficients.
+\item[(ii)] item pairs with two significant negative partial $\gamma$ coefficients.
+\item[(iii)] item pairs with only one significant positive partial $\gamma$ coefficient.
+\item[(iv)] item pairs with only one significant negative partial $\gamma$ coefficient. 
+\item[(v)] item pairs with no significant partial $\gamma$ coefficients. 
+\end{enumerate}
+
+For each pair, compute the weighted partial $\gamma$. Use stepwise inclusion for all the item pairs flagged for LD, prioritizing pairs with two significant coefficients. First, include the strongest evidence of LD at face value. Next, disregard all other tests as spurious if one of the two flagged items defines the conditional rest-score. Move pairs down on the list (i)-(v) above if this happens. Repeat until no flagged pairs remain.
 
 
-\subsubsection{Step 3}
-In this step of the screening process we begin the filtering of spurious evidence for LD and DIF. 
+\paragraph{(b) Elimination of spurious evidence for items with more than one
+DIF source.} This step is Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}. Note, importantly, that no source is removed from the source list until all tests have been performed in the current iteration. Furthermore, in line 8 of that algorithm we refer to Algorithm \ref{alg:mc_cond_independence} (also in Appendix~\ref{sec:AppAlgorithms}). Algorithm \ref{alg:mc_cond_independence} is simply a Monte Carlo based method for estimating $p$-values.
 
-\paragraph{Step 3(a)} is a stepwise inclusion algorithm that processes all item pairs flagged for LD. For each pair both directions are tested; following \cite{kreiner-christensen-2011}, we take the strongest evidence of LD at face value and disregard the remaining tests as spurious once one of the two items in an accepted pair is used to define a conditional rest-score.
+\paragraph{(c) Elimination of spurious evidence for sources with an apparent
+DIF effect on more than one item} The elimination algorithm applied in Step 3(c) is very similar to that used in 3(b). In fact, it is the exact same procedure, but instead of eliminating sources of spurious DIF, we eliminate items exhibiting spurious DIF w.r.t. exogenous variables. In other words, we are working with the $DIF(X_i)$ lists instead of the $SOURCE(Y_i)$ lists. Hence, we refer the curious reader to Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms} for the full algorithm.
 
-\paragraph{\textit{Step 3(a) in practice:}} From the LD evidence flagged in Step 2, we sort item pairs into four stages, processed in order: (1) both directions significant and positive, (2) one direction significant and positive, (3) both directions significant and negative, (4) one direction significant and negative. Within each stage we repeatedly accept the pair with the largest positive (stages 1--2) or most negative (stages 3--4) weighted partial gamma, computed via Algorithm \ref{alg:LD_eli_algo} in Appendix~\ref{sec:AppAlgorithms}. Once a pair is accepted as genuine LD, tests involving its rest-score-defining item are removed, which can drop other pairs from a two-direction stage into the matching one-direction stage.
-\begin{mybox3}
-    \begin{example}
-        Suppose we have a dataset with three items and the following lists of significant LD
+\paragraph{Combining (b) and (c).} The order of Step 3(b) and 3(c) does not matter since no final decisions are made until both steps have been performed. When both steps have been performed, we are left with a list of item and exogenous variable pairs, the partial gamma coefficient from testing independence between the pair given score, and possibly other items, and a $p$-value. Furthermore, for the same item and exogenous variable pair, we will have a partial gamma coefficient from the test of conditional independence between the pair given the score and possibly other exogenous variables together with the corresponding $p$-value. And not until now will final conclusions, on whether or not the DIF is genuine or not, be made. DIF will only be accepted as genuine if both $p$-values are significant.
 
-\begin{center}
-\captionof{table}{Item pairs with two significant positive partial $\gamma$ coefficients.}
-\begin{tabular}{c c c c c}
-\hline 
-$\text{item}_i$ & $\text{item}_{i'}$ & $\gamma_{ii'}^{(i)}$ & $\gamma_{ii'}^{(i')}$ & $WPG_{ii'}$ \\
-\hline
-item 1 & item 2 & $0.8$ & $0.4$ & $0.6$  \\
-
-item 1 & item 3 & $0.5$ & $0.6$ & $0.55$ \\
-\hline
-\end{tabular}
-\label{tab:placeholder1}
-\end{center}
-
-and 
-\begin{table}[H]
-    \centering
-    \caption{Item pairs with only one significant positive partial $\gamma$ coefficients.}
-    \begin{tabular}{c c c c c}
-    \hline 
-    $\text{item}_i$ & $\text{item}_j$ & $\gamma_{ii'}^{(i)}$ & $\gamma_{ii'}^{(i')}$ & $WPG_{ii'}$ \\
-    \hline
-         item 2 & item 3 & $0.8$ & $0.1$ & $0.45$  \\
-         \hline
-    \end{tabular}
-    \label{tab:placeholder2}
-\end{table}
-Then, in the first iteration we would accept the evidence that local dependence between item 1 and item 2 is genuine. And the evidence that $\text{item 1}\bot \text{item 3}\mid R_1$ with $\gamma = 0.5$ would be disregarded as spurious, hence the item pair 1 and 3 would be dropped to the set with only one significant positive partial correlation, and the LD between item 2 and 3 would be completely disregarded as its only significant direction is when conditioned on $R_2$. So the two sets in the second iteration would be
-\begin{table}[H]
-    \centering
-    \caption{Item pairs with two significant positive partial $\gamma$ coefficients.}
-    \begin{tabular}{c c c c c}
-    \hline 
-    $\text{item}_i$ & $\text{item}_{i'}$ & $\gamma_{ii'}^{(i)}$ & $\gamma_{ii'}^{(i')}$ & $WPG_{ii'}$ \\
-    \hline
-         NA & NA & NA & NA & NA  \\
-         \hline
-    \end{tabular}
-    \label{tab:placeholder3}
-\end{table}
-and 
-\begin{table}[H]
-    \centering
-    \caption{Item pairs with only one significant positive partial $\gamma$ coefficients.}
-    \begin{tabular}{c c c c c}
-    \hline 
-    $\text{item}_i$ & $\text{item}_{i'}$ & $\gamma_{ii'}^{(i)}$ & $\gamma_{ii'}^{(i')}$ & $WPG_{ij}$ \\
-    \hline
-         item 1 & item 3 & $0.5$ & $0.6$ & $0.55$  \\
-         \hline
-    \end{tabular}
-    \label{tab:placeholder4}
-\end{table}
-Thus, LD between item 1 and item 3 would be accepted as genuine, resulting in the two lists now being empty, and thus terminating the algorithm. The final set of what we believe to be genuine LD is $\{(\text{item 1},\text{item 2}), (\text{item 1},\text{item 3})\}$.
-    \end{example}
-\end{mybox3}
-
-
-
-
-\paragraph{Step 3(b)} is an elimination algorithm that separates genuine from spurious sources of DIF for each item, implemented as in \cite{kreiner-christensen-2011} and detailed in Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}. No source is removed from the candidate list until all tests in the current iteration have been performed. Significance is assessed via the Monte Carlo $p$-value procedure of Algorithm \ref{alg:mc_cond_independence} (also in Appendix~\ref{sec:AppAlgorithms}), following the discussion in Section 5.1 of \cite{kreiner-christensen-2011}.
-
-Important note: the partial gamma coefficient is used only as an effect size; the Monte Carlo $p$-value comes not from permuting it directly but from the conditional independence test statistic implemented in \texttt{coin}, the linear statistic $T$ of \cite{strasser-weber-1999},
-\begin{equation}
-    T= vec\left(
-    \sum_{i=1}^nw_ig(X_i)h(Y_i,(Y_1,\dots,Y_n))^T
-    \right) \in \mathbb{R}^{pq},
-\end{equation}
-where $g$ and $h$ are the regression and influence functions of $X$ and $Y$. The two statistics assess the same conditional association but are not numerically identical.
-
-
-\newpage
-
-
-\paragraph{Step 3(c)} applies the same elimination procedure as Step 3(b), but to the $DIF(X_i)$ lists rather than the $SOURCE(Y_i)$ lists, eliminating items exhibiting spurious DIF with respect to each exogenous variable; see Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}.
-
-\paragraph{\textit{Combine Step 3(b) and 3(c).}} The order of Step 3(b) and 3(c) does not matter, as per \cite{kreiner-christensen-2011}, since no final decision is made until both have run. Each item-covariate pair then carries two $p$-values, one from each step, and DIF is accepted as genuine only if both are significant.
 \begin{mybox3}
 \begin{example}
 Assume we have five items $\{A,B,C,D,E\}$ and two exogenous variables
@@ -369,7 +292,10 @@ and
 DIF(X)=\{A,C\}, \qquad DIF(Z)=\{A,E\}.
 \]
 
-Step 3(b) tests, for each item $Y_i$, whether each candidate source remains associated with $Y_i$ after conditioning on the score and the other candidate sources. Suppose it gives the following result:
+Step 3(b) investigates each item separately. For each item $Y_i$, we test
+whether each candidate source remains associated with $Y_i$ after conditioning
+on the score and the other candidate sources for that item. Suppose Step 3(b)
+gives the following final result:
 
 \begin{table}[H]
 \centering
@@ -395,7 +321,10 @@ SOURCE^{(3b)}(C)=\{X\}, \quad
 SOURCE^{(3b)}(E)=\{Z\}.
 \]
 
-Step 3(c) tests, for each covariate $X_j$, whether each candidate DIF item remains associated with $X_j$ after conditioning on the score and the other candidate items. Suppose it gives the following result:
+Step 3(c) investigates each exogenous variable separately. For each covariate
+$X_j$, we test whether each candidate DIF item remains associated with $X_j$
+after conditioning on the score and the other candidate DIF items for that
+covariate. Suppose Step 3(c) gives the following final result:
 
 \begin{table}[H]
 \centering
@@ -458,32 +387,32 @@ DIF(X)=\{A\}, \qquad DIF(Z)=\{E\}.
 \end{mybox3}
 
 
-\subsubsection{Step 4}
-We now examine the structural association between the total score and exogenous variables via backwards elimination, as suggested by \cite{kreiner-christensen-2011}: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates.
+\subsection{Association between the score and exogenous covariates}
+Moving away from DIF and LD for a moment, we are now interested in the structural association between the total score and exogenous variables, which we will investigate via backwards elimination search, as per \cite{kreiner-christensen-2011} suggestion. The idea here is to determine which exogenous covariates to retain as structural predictors of the score, which we do by tests of conditional independence between the score and exogenous variables given the remaining set of exogenous variables still retained. 
 
-\paragraph{\textit{Step 4 in practice.}} The backwards elimination search is implemented as Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}, with significance assessed via the same Monte Carlo approximation (Algorithm \ref{alg:mc_cond_independence}) used in Step 3(b) and 3(c).
+\paragraph{\textit{Step 4 in practice.}} The general structure of Step 4 is clear from posed screening procedure. The backwards elimination search for exogenous variables associated with the score is implemented as described in Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}. When we determine significance of tests, we do so using the same framework as in Step 3(b) and 3(c), i.e., via the Monte Carlo approximation implemented by Algorithm \ref{alg:mc_cond_independence}.
 
-Retained covariates are treated as evidence of criterion validity and included in the initial GLLRM; dropped covariates are judged to add no significant information about the score once the other candidates are controlled for, and are excluded.
+Retained covariates are treated as evidence of criterion validity, as they exhibit a significant conditional association with the total score. Dropped covariates, i.e., covariates with non-significant conditional independence tests, are interpreted as not contributing significant additional information towards the score after controlling for other covariates in the candidate set, and should therefore not be included in the final model, as opposed to those we conclude to fulfill the criterion validity. The final result of Step 4 is therefore not just a collection of marginal score and exogenous variable associations. Each retained covariate has survived Algorithm \ref{alg:step4}, and we therefore allow ourselves to conclude that its association with the total score is non-trivial, and the covariate should therefore be included in the initial definition of the GLLRM in later steps.
 
+\subsection{Graphical Rasch model and analysis of global Markov properties
+of $G_{\mathrm{Rasch}}$}
 
-
-
-\subsubsection{Step 5}
-We now construct the initial GLLRM by collecting the outputs of Steps 3 and 4 into the corresponding graph, IRT graph, and moralized marginal graph.
+We are now ready to begin the initial construction of the GLLRM by collecting all the information from Step 3 and 4 outputs, and form the graph corresponding to the model, together with its corresponding IRT and moralized marginal graph. 
 
 \paragraph{\textit{Step 5 in practice}}
-No new tests are performed; we simply report the structure implied by the genuine LD and DIF edges and the exogenous variables satisfying criterion validity. The GLLRM graph records which nodes are present and connected beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. The moralized marginal graph is obtained by marrying parents, replacing the latent trait with a score node, and adding undirected score-to-item and item-to-item edges.
+We do not perform any new statistical tests in this step, but simply collect the information passed on from the previous steps and report the structure of the corresponding GLLRM graph. The GLLRM graph is quite straight forward, as we simply collect the genuine LD, genuine DIF, and which exogenous variables satisfy criterion validity with the latent trait. We report which nodes are present and where nodes are connected, beyond the edges connecting items to the latent trait. From this, we can determine how the IRT graph should look as it includes the same edges and nodes, but with item measurement, score association, and DIF edges being directed, while LD edges are undirected. Finally, the moralized marginal graph is obtained by marrying parents, replacing the latent trait with a score node, and including score-to-item edges and edges between all items, all of which are undirected.  
 
 
-\subsubsection{Step 6}
-Before reporting an initial model, we retest the DIF and LD relations retained from Step 5 against the full structure, to check they are not artifacts of the simpler conditioning sets used earlier. For DIF, this is the test
+\subsection{Tests of global Markov properties of the GLLRM}
+We are now ready to perform the last round of tests before reporting an initial model. In Step 5, we report a tentative model; now we subject this model to additional conditional independence tests for the otherwise retained DIF and LD in order to investigate if these relations still hold when taking the structure determined in Step 5 into account. In other words, we now check if LD and DIF edges found in Step 5 were only supported due to the simpler conditioning sets. \\
+We perform three types of tests to determine this. For DIF, the tests are of the form
 \begin{align}
     H_0^{C5}: Y_i \perp X_j
     \mid
     S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
     \operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
 \end{align}
-For each genuine LD pair $(Y_a,Y_b)$, we cut the edge between them, condition each item on the sub-score complementary to its remaining LD connections together with its DIF sources, and test both directions ($C7$ and $C9$; \cite{kreiner-christensen-2011}). The edge is retained if at least one direction is significant.
+For each LD edge we perform two tests. For generic item pair $(Y_a,Y_b)$ exhibiting, what Step 3 has determined to be genuine LD, we now retest this in the following way: Separate the two pairs in the graph and observe which other LD connections are available from the two. We then consider the sub-score defined by the complement to the relevant sets, and use this to condition on together with other DIF sources for the corresponding LD connections. These are referred to as $C7$ and $C9$ hypothesis \cite{kreiner-christensen-2011}. We allow the LD edge to be retained, if at least one of the two tests are significant. 
 
 \begin{mybox3}
     \begin{example}
@@ -502,7 +431,7 @@ For each genuine LD pair $(Y_a,Y_b)$, we cut the edge between them, condition ea
             \caption{Hypothetical tests to determine if DIF edges should be retained.}
             \label{tab:step6_dif_example}
         \end{table}
-        Next we check whether the LD edges should be retained: take the pair $(A,B)$, cut their edge, and consider the LD connections still available from each item.
+        Next, we check if the LD edges should be retained via the following procedure. Take the pair $(A,B)$, cut the edge between the two, and consider the LD connections still available from either one.
         % Temporary removal of LD edge (A,B)
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
@@ -644,13 +573,14 @@ Future development could also focus on improving the integration between twigg a
 \end{appendices}
 
 \begin{appendices}
-\section{}\label{sec:App1}
+
+\section{Association measures}\label{sec:App-gamma}
 %\input{appendix}
 \input{Appendix - association measures}
 \end{appendices}
 
 \begin{appendices}
-\section{}\label{sec:AppB}
+\section{}\label{sec:App-multiple-testing}
 \input{Appendix - multiple testing}
 \end{appendices}
 

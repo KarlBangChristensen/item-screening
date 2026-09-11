@@ -3,6 +3,8 @@
 This appendix collects the pseudocode for the algorithms implementing the item screening procedure described in Section~\ref{sec:it_sec}, in the order in which they are used.
 
 \subsection*{Step 2: Partial Gamma Coefficient}
+$A$ and $B$ are variables that correspond to distinct items if we check for LD. If we check for DIF, one is an item and one is an exogenous variable. All rejected tests are flagged and we move onto the next step.
+
 \begin{breakablealgorithm}
 \caption{Partial $\gamma$ coefficient for testing $A \bot B \mid \mathcal{C}$}
 \label{alg:part_gam}
