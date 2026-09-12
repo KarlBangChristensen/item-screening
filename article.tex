@@ -196,7 +196,7 @@ Here
 
 \begin{align}
 P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^4\alpha_iy_i+(\star)\Big),
-\label{eq:also-sufficient}
+\label{eq:also-sufficient-example}
 \end{align}
 where
 \begin{align}
@@ -206,7 +206,7 @@ where
 \end{example}
 \end{mybox3}
 
-\section{Methods}
+\section{Methods}\label{sec:it_sec}
 
 This section describes the item screening procedure. Assume that $V(\Theta)>0$ and make three choices: (i) an association measure and a partial association measure; (ii) a way to calculate $p$-values; (iii) a way to adjust for multiple testing.
 
@@ -226,7 +226,7 @@ Test that any item $Y_a$ is positively related to its corresponding rest-score $
 
 Test that any exogenous variable $X_l$ that is positively related to $\Theta$ is also positively related to the total score $S$, to all sub-scores, $S_A$, and to all item responses $Y_i$. 
 
-\subsection{Analysis of LD and DIF}
+\subsection{Analysis of LD and DIF}\label{sec:ld-dif}
 
 Use partial association coefficients to flag all item pairs exhibiting LD and all pairs of an item and a covariate that exhibit DIF. Test hypotheses of the form
 
