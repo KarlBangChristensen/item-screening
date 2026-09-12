@@ -61,6 +61,7 @@ D \gets 0.
 \EndIf
 
 \State Compute
+\coauthortodo{\textbf{Asymptotic $p$-values.} Algorithm~\ref{alg:part_gam} returns only $\gamma$, but later steps require $p$-values. Please document the variance estimate, tail calculation, and handling of undefined tests actually used by \texttt{twigg}, then update the algorithm's outputs. Check consistency with the reported results; DIGRAM equivalence has not been verified.}%
 \[
 \gamma_{A \bot B \mid \mathcal{C}}
 \gets
