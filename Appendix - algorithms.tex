@@ -112,6 +112,7 @@ k \in \{i,i'\}
 
 \State For each item pair $\{Y_i,Y_{i'}\}$ represented in the initial LD
 screening, compute the pair-level weighted partial gamma
+\coauthortodo{\textbf{Zero weights.} Algorithm~\ref{alg:part_gam} returns $\mathrm{NA}$ when a direction has no comparable pairs. Then $0\cdot\mathrm{NA}$ makes this weighted expression undefined, even if the other direction is usable. Please specify how zero-weight terms are handled.}%
 \[
 WPG_{ii'}
 =
@@ -181,6 +182,7 @@ w_{ii'}^{(i)} + w_{ii'}^{(i')}
     \]
 
     \State First, consider pairs with two active significant partial gamma coefficients:
+    \coauthortodo{\textbf{Mixed signs.} Two significant directions of opposite sign belong to none of the four lists. The loop can then seek a maximum over an empty set while $\mathcal{H}$ is nonempty. Please define their treatment.}%
     \[
     \mathcal{L}^{(2)}
     =
