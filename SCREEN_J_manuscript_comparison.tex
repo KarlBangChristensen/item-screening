@@ -1,0 +1,1242 @@
+% Standalone note: compile this file directly with pdfLaTeX or latexmk.
+% No manuscript inputs or files from the DIGRAM repository are required.
+\documentclass[11pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{lmodern,microtype}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,booktabs,tabularx,longtable,array}
+\PassOptionsToPackage{obeyspaces}{url}
+\usepackage{enumitem,needspace,xcolor,xurl}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Manuscript screening procedure and DIGRAM SCREEN J},
+  pdfsubject={Detailed source-based algorithm comparison}}
+\definecolor{tracegray}{gray}{0.32}
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{1.5em}
+\setlist{itemsep=3pt,topsep=4pt}
+\renewcommand{\arraystretch}{1.15}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\SRC}{\operatorname{SOURCE}}
+\newcommand{\DIF}{\operatorname{DIF}}
+\newcommand{\WPG}{\operatorname{WPG}}
+\newcommand{\ind}{\perp}
+\newcommand{\Iset}{\mathcal{I}}
+\newcommand{\src}[2]{\hyperlink{source-#1}{\textsf{#1}}, lines~#2}
+\newcommand{\trace}[2]{%
+  \par\smallskip
+  {\footnotesize\color{tracegray}\textbf{Manuscript:} #1.\quad
+  \textbf{DIGRAM:} #2.\par}\medskip}
+\newcommand{\finding}[1]{\Needspace{5\baselineskip}\subsection{#1}}
+\newcommand{\man}{\textbf{Manuscript.}\ }
+\newcommand{\dig}{\textbf{DIGRAM.}\ }
+\newcommand{\effect}{\textbf{Consequence.}\ }
+
+\title{Manuscript screening procedure and DIGRAM SCREEN J:\\
+  a detailed algorithm comparison}
+\author{Technical note for the coauthors}
+\date{12 September 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This note compares the six-step procedure in \emph{Item screening in graphical
+Rasch models: a tutorial}, including its algorithm and data-example appendices,
+with the original Pascal implementation of DIGRAM SCREEN J. The procedures
+differ in local-dependence priorities, the updating of candidate sets,
+differential-item-functioning purification, test statistics, score-effect
+selection, and the scope of subsequent graph checks. The comparison uses the
+manuscript's notation and gives source locations, explicit decision rules, and
+examples of their consequences. DIGRAM's separate CHECK I routines are examined
+where relevant to the manuscript's Step 6. Confirmed differences, missing
+specifications, and internal example inconsistencies are distinguished.
+\end{abstract}
+
+\section{Scope, versions, and interpretation}
+\label{sec:scope}
+The manuscript baseline is PREP revision \texttt{330511f}
+(\path{330511f4f1539c4dd971bbc51d6eea3581975ebe}).
+The DIGRAM repository baseline is revision \texttt{cbc484a}
+(\path{cbc484a43dae1b2356f851c7d4bc035f774e86c2}).
+The original implementation examined is the preserved DIGRAM 7.04 snapshot
+under \path{../digram/source/digram_source_20260817/}.
+The project file \path{scd/scd.dpr} determines which duplicate unit is active:
+the command handler comes from \path{scd/}, and the statistical units cited
+here come from \path{skunits/}. Source abbreviations and paths are listed in
+Section~\ref{sec:sources}.
+
+The comparison concerns the behavior of this particular implementation.
+A discrepancy can be an intentional methodological change; it does not,
+by itself, establish that the manuscript's method is statistically inferior.
+The R package used by the manuscript and the R reimplementation in the sister
+repository are not substitutes for the original Pascal source in this audit.
+
+Three types of finding appear below:
+\begin{description}[style=nextline,leftmargin=0pt,labelsep=0pt,labelwidth=0pt]
+\item[Behavioral difference.]
+The two descriptions imply different tests, candidate sets, selection orders,
+or outputs.
+\item[Specification gap.]
+The manuscript does not provide enough detail to determine whether its
+behavior agrees with DIGRAM.
+\item[Internal manuscript issue.]
+A displayed example or pseudocode statement is inconsistent with another
+part of the manuscript, independently of DIGRAM.
+\end{description}
+
+The numerical examples introduced specifically for this note are hypothetical
+screening summaries, not results of newly fitted datasets. Statements about
+the Actinic Keratosis Quality of Life (AKQoL) and Shoulder Pain and Disability
+Index (SPADI) analyses identify consequences of the stated hypotheses
+and graph structures. A complete numerical comparison would require rerunning
+the analyses with matched data preparation and inference settings.
+
+\subsection{The command boundary matters}
+SCREEN J saves the current local-dependence (LD) and differential-item-functioning
+(DIF) matrices, computes screening evidence, reports it, and restores the saved
+matrices. The command handler encloses graph initialization, model definition,
+and moralization in a branch that explicitly excludes command option J.
+The boolean \texttt{DefineModel} passed through the screening wrapper is marked
+as unused in the statistical routine; its name does not imply that SCREEN J
+performs a final model check.
+
+Consequently, manuscript Steps 5 and 6 are additional stages relative to
+SCREEN J. Related graph diagnostics exist as separate DIGRAM commands,
+including CHECK I and CHECK D. Those routines are compared explicitly in
+Section~\ref{sec:step6}; their behavior must not be attributed to SCREEN J.
+\trace{\path{article.tex}, lines 412--428 and 669--711}
+{\src{CMD}{1793--1804, 1877--1922}; \src{EXE}{1351--1366};
+ \src{S7}{2330--2339, 3228--3315}}
+
+\section{Notation and the sequence being compared}
+\label{sec:notation}
+Let
+\[
+ \Iset=\{Y_1,\ldots,Y_k\},\qquad
+ \boldsymbol X=(X_1,\ldots,X_m),\qquad
+ S=\sum_{i=1}^kY_i,\qquad R_i=S-Y_i .
+\]
+For an item subset \(B\subseteq\Iset\), write
+\[
+ S_B=\sum_{Y_i\in B}Y_i,\qquad B^c=\Iset\setminus B .
+\]
+The \(Y_i\) are items and the \(X_j\) are exogenous covariates throughout this
+note. Letters \(A,B,C,D,E\) and \(X,Z\) are retained when referring to the
+manuscript's hypothetical examples. Write \(S_{\max}\) for the largest possible
+total score; this avoids confusing it with the manuscript's per-item category
+maximum \(M\) or its number of covariates \(m\).
+
+At a given stage of screening, use the manuscript's set notation
+\begin{align*}
+ \SRC(Y_i)&=\{X_j:(Y_i,X_j)\text{ is currently retained}\},\\
+ \DIF(X_j)&=\{Y_i:(Y_i,X_j)\text{ is currently retained}\}.
+\end{align*}
+To describe the graph checks without using \(\DIF\) for two different kinds
+of object, extend the source notation explicitly:
+\[
+ \SRC(B)=\bigcup_{Y_i\in B}\SRC(Y_i),\qquad
+ \mathcal B_{\mathrm{all}}=\bigcup_{j=1}^m\DIF(X_j).
+\]
+Thus \(\SRC(B)\) is a set of covariates, and
+\(\mathcal B_{\mathrm{all}}\) is the set of items having any retained DIF.
+These definitions clarify the comparison; they do not alter the manuscript.
+
+For an unordered item pair \(\{Y_i,Y_{i'}\}\), its two directional tests are
+\[
+ H_{ii'}^{(i)}:Y_i\ind Y_{i'}\mid R_i,\qquad
+ H_{ii'}^{(i')}:Y_i\ind Y_{i'}\mid R_{i'}.
+\]
+Write their estimates and p-values as \(\gamma_{ii'}^{(h)}\) and
+\(p_{ii'}^{(h)}\), where \(h\in\{i,i'\}\). A direction identifies the
+conditioning rest-score; it does not make statistical association asymmetric
+within a fixed conditioning set.
+
+Let \(c_{.05}\), \(c_{.01}\), and \(c_{.001}\) denote DIGRAM's raw-p-value
+cutoffs obtained from its combined Benjamini--Hochberg (BH) family. These are
+distinct from the nominal false discovery rate (FDR) levels \(0.05\),
+\(0.01\), and \(0.001\), and from adjusted p-values.
+
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{0.24\linewidth}X@{}}
+\toprule
+Manuscript stage & Corresponding original-source behavior\\
+\midrule
+Step 1 & Marginal diagnostics are reported; the manuscript's explicit
+M1--M3 verdicts are an additional interpretive layer.\\
+Step 2 & Two directed LD tests per item pair and one selected test statistic
+per item--covariate DIF relation; one combined BH family.\\
+Step 3(a) & Four successive LD-selection stages with sign-specific priorities
+and original evidence counts.\\
+Steps 3(b), 3(c) & DIGRAM executes the per-covariate item pass first
+(manuscript 3(c)), then the per-item source pass (3(b)), using shared updates.\\
+Step 4 & Marginal score-effect selection followed by conditional elimination.\\
+Step 5 & SCREEN J reports evidence and restores the current model;
+it does not construct the manuscript's new graphs.\\
+Step 6 & No corresponding SCREEN J stage. Related CHECK I routines have
+different conditioning and reporting behavior.\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Preparation and Step 1: consistency}
+\label{sec:step1}
+\finding{The operational scope is narrower than the measurement requirements}
+\man M1 concerns positive associations between item pairs. M2 concerns
+item--rest-score associations and all subscores excluding the item. M3 concerns
+consistent directions between a covariate, the score, subscores, and items.
+The Discussion explains that the implementation does not test all subscores.
+The data examples give explicit pass/fail judgments and reasons to proceed.
+
+\dig SCREEN J computes and prints marginal item--item, item--rest-score,
+item--covariate, and score--covariate diagnostics. It does not enumerate all
+item subsets. Its active orchestration does not stop or remove an item because
+an explicit M1, M2, or M3 verdict fails. The local helper functions
+\texttt{problem1} and \texttt{problem2} in \texttt{Item\_Screening} are
+defined but are not called by that routine's active screening sequence;
+their definitions should not be mistaken for executed pass/fail rules.
+
+\effect The theoretical requirements, the manuscript's reduced checks,
+and SCREEN J's diagnostics are three distinct levels of description.
+Restricting checks to rest-scores is compatible with the source's scope,
+but the manuscript's rules for interpreting failures and deciding to proceed
+are not an automatic SCREEN J selection stage.
+\trace{\path{article.tex}, lines 237--249, 565, and 702;
+ \path{Appendix - data example.tex}, lines 13--15}
+{\src{S7}{668--754, 2361--2378, 2652--2717, 2943--3008}}
+
+\finding{Coding, record selection, and score restrictions need specification}
+\man The examples use complete item and covariate data after preprocessing;
+the SPADI appendix describes category collapsing. Algorithm 1 is stated for
+a supplied dataset without a general rule for record frequencies, missing
+covariates, score restrictions, or item reversal.
+
+\dig SCREEN J requires at least three items. Source item codes are stored
+with an offset, with configured reversals applied during item extraction;
+the corresponding mathematical scores can be represented by the manuscript's
+zero-based \(Y_i\). Frequency counts in DIGRAM tables contribute to all
+contingency-table cells. The source distinguishes \texttt{GET\_ITEMS} from
+\texttt{GET\_GOOD\_ITEMS}. The latter additionally requires
+\[
+ 0<S<S_{\max},\qquad
+ \texttt{MinScore}\le S\le\texttt{MaxScore}.
+\]
+The configured \texttt{MaxScore} is not silently identified with \(S_{\max}\).
+
+For each initial LD pair \(i<i'\), the first direction uses
+\texttt{GET\_ITEMS}; the reverse uses \texttt{GET\_GOOD\_ITEMS}.
+Initial DIF tables use stored scores \(1,\ldots,\texttt{MaxScore}-1\),
+original item/covariate codes, and a post-computation gamma sign reversal
+for flipped items. Later DIF pruning rebuilds tables for the current
+candidate set using valid non-extreme total scores.
+Score-effect screening uses \texttt{GET\_ITEMS} and permits extreme scores.
+The exact record set is therefore part of the computation.
+
+\effect This is primarily a reproducibility gap. With ordinary complete data
+and the full score range, some exclusions involve strata with no comparable
+pairs and may leave gamma unchanged. That does not justify assuming all
+source filters are immaterial under missingness or restricted score ranges.
+Further table-building details are given in Section~\ref{sec:inference}.
+\trace{\path{article.tex}, lines 140, 151, and 562;
+ \path{Appendix - algorithms.tex}, lines 13--37;
+ \path{Appendix - data example.tex}, lines 5--11}
+{\src{CMD}{1779--1784}; \src{S2}{3318--3403};
+ \src{S7}{267--314, 462--463, 777--815, 844--875}}
+
+\section{Step 2: initial LD and DIF evidence}
+\label{sec:step2}
+\finding{The initial conditional hypotheses and pooled gamma agree}
+The manuscript's initial hypotheses
+\[
+ Y_i\ind Y_{i'}\mid R_i,\qquad
+ Y_i\ind Y_{i'}\mid R_{i'},\qquad
+ Y_i\ind X_j\mid S
+\]
+agree with the source's conditioning structure. The main differences at this
+stage concern the statistic, inference conventions, and multiplicity family.
+
+The pooled partial gamma also agrees when its denominator is positive.
+Writing \(C_\ell,D_\ell\) for concordant and discordant pair counts in
+conditioning stratum \(\ell\),
+\[
+ \widehat\gamma=
+ \frac{\sum_\ell(C_\ell-D_\ell)}
+      {\sum_\ell(C_\ell+D_\ell)}.
+\]
+DIGRAM's \texttt{PMQ} and \texttt{PPQ} use doubled pair counts. The common
+factor cancels in gamma and in the weighted directional gamma below.
+\trace{\path{article.tex}, lines 253--259;
+ \path{Appendix - association measures.tex}, lines 1--15}
+{\src{S7}{759--875, 448--477}; \src{STAT}{1004--1030}}
+
+\finding{Initial DIF is not always tested with gamma}
+\man The Methods and algorithm appendix describe gamma and partial-gamma
+tests for the screening procedure.
+
+\dig Initial LD decisions use partial gamma. For initial DIF, the
+covariate determines the selected statistic: binary covariates are treated
+as ordinal, ordinal covariates use gamma, and other nominal covariates use
+the source's contingency-table chi-square statistic.
+The latter need not be Pearson's statistic: DIGRAM's global settings can
+select a likelihood-ratio or other implemented power-divergence form.
+
+\effect Gamma-only screening is a restricted or modified procedure.
+For nominal covariates with more than two categories it can depend on an
+arbitrary ordering that DIGRAM's initial nominal-variable branch does not require.
+The example covariates avoid this particular nominal-multicategory issue,
+but the manuscript's general algorithm does not state the restriction.
+Later source stages treat variable types differently
+(Section~\ref{sec:inference}).
+\trace{\path{article.tex}, line 235;
+ \path{Appendix - algorithms.tex}, lines 5--14}
+{\src{BV}{1680--1688}; \src{S7}{329--395, 460--477};
+ \src{STAT}{2324--2392}}
+
+\finding{The BH family combines LD and DIF}
+\man Step 2 states that p-values are adjusted for multiple testing.
+The multiple-testing appendix explains BH without specifying its test family.
+
+\dig The initial family is the list
+\[
+ \mathcal P=
+ \bigl(p_{ii'}^{(i)}:i=1,\ldots,k,\ i'\ne i\bigr)
+ \ \mathbin{\|}\
+ \bigl(p_{ij}^{\mathrm{DIF}}:i=1,\ldots,k,\ j=1,\ldots,m\bigr),
+\]
+where \(\mathbin{\|}\) denotes concatenation. Its length is
+\[
+ T=k(k-1)+km.
+\]
+Both LD directions are included. The DIF contribution contains the single
+statistic selected for each item--covariate pair, not both gamma and
+chi-square p-values. Marginal diagnostics and subsequent score-effect tests
+do not belong to this family. For AKQoL, \(k=10,m=2\), giving \(T=110\).
+
+\effect Adjusting LD and DIF separately, adjusting one collapsed value per
+unordered LD pair, or pooling all later tests produces a different procedure.
+The manuscript does not establish which family generated its tables.
+\trace{\path{article.tex}, lines 235 and 259;
+ \path{Appendix - multiple testing.tex}, lines 1--6}
+{\src{S7}{2965--2991}}
+
+\finding{Cutoffs, unavailable tests, and boundary conventions}
+For sorted values \(p_{(1)}\le\cdots\le p_{(T)}\), DIGRAM scans downward and
+returns \(c_\alpha=r\alpha/T\) for the largest qualifying rank \(r\).
+It returns \(\alpha/T\) if no rank qualifies. For ordinary valid p-values
+this fallback still gives no rejections: failure at rank 1 implies
+\(p_{(1)}>\alpha/T\). Thus the manuscript's rule of no rejection when no rank
+qualifies is not a substantive disagreement.
+
+The reported raw cutoff \(r\alpha/T\) can differ numerically from the largest
+rejected observed p-value \(p_{(r)}\), while giving the same decisions on the
+family used to compute it. Comparing BH-adjusted p-values with \(\alpha\)
+is likewise equivalent for the same valid p-values and family.
+
+DIGRAM initializes unavailable p-values with the sentinel \(2\), and its
+collection loop retains these entries in \(T\). Dropping missing tests changes
+the denominator. Its sorting routine also applies the floating-point
+transformation \((1+p)-1\), which can affect exact boundary comparisons.
+The source selects \(p\le c_\alpha\), whereas the manuscript sometimes says
+that p-values must be below a threshold. Ties are allowed by DIGRAM; the
+manuscript's strictly increasing ordering is already flagged by a TODO.
+\trace{\path{article.tex}, line 259;
+ \path{Appendix - multiple testing.tex}, lines 5--6}
+{\src{MCA}{397--462}; \src{S7}{2380--2395, 2932--2940, 2965--2991}}
+
+\finding{An estimate alone does not specify its p-value}
+Algorithm 1 returns \(\widehat\gamma\), but later algorithms refer to it as
+providing an asymptotic partial-gamma test and p-value. Neither that algorithm
+nor the association-measures appendix specifies the variance estimate and
+tail calculation needed to reproduce the test.
+
+Initial source tests use \texttt{XYZ\_bias\_ANALYSE}. Its gamma result slot 6
+is an asymptotic two-sided p-value, while slot 7 supplies the simulation-based
+value when requested. Initial nominal DIF uses slots 3 and 4 for the
+corresponding chi-square p-values. Later pruning uses a different result
+structure, described in Section~\ref{sec:decisionp}.
+
+This is a specification gap, not evidence that the manuscript's variance
+formula is wrong: that formula is not provided. Handling an undefined gamma
+is also incomplete. Algorithm 1 returns \(\mathrm{NA}\) when there are no
+comparable pairs, without specifying the subsequent selection or multiplicity
+decision. Section~\ref{sec:inference} records the source's numerical conventions.
+\trace{\path{Appendix - algorithms.tex}, lines 59--70 and 284--295;
+ \path{Appendix - association measures.tex}, line 15}
+{\src{S7}{448--477, 808--815, 868--875}; \src{S3}{593--627}}
+
+\section{Step 3(a): elimination of spurious LD evidence}
+\label{sec:ld}
+
+\finding{The weighted gamma agrees and remains fixed}
+For \(h\in\{i,i'\}\), let
+\[
+ w_{ii'}^{(h)}
+   =\sum_\ell\bigl(C_{\ell,ii'}^{(h)}+D_{\ell,ii'}^{(h)}\bigr).
+\]
+The manuscript's pair-level coefficient
+\[
+ \WPG_{ii'}=
+ \frac{w_{ii'}^{(i)}\gamma_{ii'}^{(i)}
+       +w_{ii'}^{(i')}\gamma_{ii'}^{(i')}}
+      {w_{ii'}^{(i)}+w_{ii'}^{(i')}}
+\]
+agrees with the source's ratio of summed \texttt{IJXpmq} to summed
+\texttt{IJXppq}, provided the denominator is positive and the participating
+directional coefficients are defined, or zero-weight terms are omitted.
+If one direction has no comparable pairs, the manuscript returns
+\(\mathrm{NA}\), so a convention is needed for its zero-weight contribution;
+the source stores gamma zero for that direction.
+Both original directional
+contributions remain in that ratio after one direction is suppressed.
+Although Pascal reevaluates the ratio inside each search, the stored counts
+are unchanged, so the weighted coefficient is effectively fixed.
+The manuscript's initialization before the selection loop agrees with this.
+\trace{\path{Appendix - algorithms.tex}, lines 88--123}
+{\src{S7}{2455--2457, 2489--2490, 2524--2525, 2559--2560, 3293--3299}}
+
+\finding{Original evidence and active evidence are different objects}
+Let \(\mathcal H_0\) be the initial significant directional hypotheses, using
+\(p\le c_{.05}\), and let \(\mathcal H_t\subseteq\mathcal H_0\) be those not
+yet suppressed. For a pair, define
+\begin{align*}
+ N_+&=\sum_{h\in\{i,i'\}}
+       \mathbf 1\{H_{ii'}^{(h)}\in\mathcal H_0,\ \gamma_{ii'}^{(h)}>0\},\\
+ N_-&=\sum_{h\in\{i,i'\}}
+       \mathbf 1\{H_{ii'}^{(h)}\in\mathcal H_0,\ \gamma_{ii'}^{(h)}\le0\},\\
+ A_+(t)&=\sum_{h\in\{i,i'\}}
+       \mathbf 1\{H_{ii'}^{(h)}\in\mathcal H_t,\ \gamma_{ii'}^{(h)}>0\},\\
+ A_-(t)&=\sum_{h\in\{i,i'\}}
+       \mathbf 1\{H_{ii'}^{(h)}\in\mathcal H_t,\ \gamma_{ii'}^{(h)}\le0\}.
+\end{align*}
+Pair subscripts are suppressed on these four counts for readability.
+The source places a zero directional gamma in its nonpositive count;
+its negative-stage names should be interpreted with this coding detail.
+
+\dig \(N_+,N_-\) use the unchanged \texttt{part\_p} matrix.
+\(A_+(t),A_-(t)\) use the temporary \texttt{temp\_p} matrix.
+
+\man The appendix classifies pairs using only \(\mathcal H_t\), so an
+originally two-direction pair is reclassified when one direction disappears.
+\trace{\path{Appendix - algorithms.tex}, lines 128--179 and 233--236;
+ \path{article.tex}, line 704}
+{\src{S7}{2397--2426}}
+
+\finding{The four source stages have different priorities}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}cL{0.27\linewidth}X@{}}
+\toprule
+Order & Source eligibility & Choice within the stage\\
+\midrule
+1 & \(N_+=2,\ A_+(t)>0\) & Largest strictly positive \(\WPG_{ii'}\).\\
+2 & \(N_+=1,\ A_+(t)>0\) & Largest strictly positive \(\WPG_{ii'}\).\\
+3 & \(N_-=2,\ A_-(t)>0\) & Smallest strictly negative \(\WPG_{ii'}\).\\
+4 & \(N_-=1,\ A_-(t)>0\) & Smallest strictly negative \(\WPG_{ii'}\).\\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+DIGRAM exhausts each stage before advancing to the next and never returns
+to an earlier stage. It does not combine signs into a common two-direction
+group and a common one-direction group. An originally two-positive pair
+remains eligible in stage 1 after one direction is suppressed, because
+the condition is \(A_+(t)>0\). The analogous statement holds in stage 3.
+
+The manuscript instead gives any currently two-direction pair priority
+over any currently one-direction pair and ranks within each group by
+\(\lvert\WPG_{ii'}\rvert\). Both the sign priority and the use of original
+counts differ from SCREEN J.
+\trace{\path{article.tex}, lines 269--276 and 704;
+ \path{Appendix - algorithms.tex}, lines 182--210}
+{\src{S7}{2435--2584}}
+
+\finding{Directional suppression itself agrees}
+After selecting \(\{Y_a,Y_b\}\), the source sets every temporary p-value
+in rows \(a\) and \(b\) to the sentinel \(2\). A row identifies the item
+excluded from the rest-score. This is equivalent to the manuscript's update
+\[
+ \mathcal H_{t+1}
+ =\mathcal H_t\setminus
+ \{H_{ii'}^{(h)}:h\in\{a,b\}\}.
+\]
+It suppresses a directional test conditioned on \(R_a\) or \(R_b\).
+It need not eliminate every unordered pair involving \(Y_a\) or \(Y_b\),
+because the reverse direction may remain active.
+No new statistical test is performed by suppression.
+\trace{\path{article.tex}, line 276;
+ \path{Appendix - algorithms.tex}, lines 217--236}
+{\src{S7}{2472--2477, 2505--2510, 2541--2546, 2575--2580}}
+
+\finding{Examples in which the retained LD evidence differs}
+\textbf{Example 1: sign priority.}
+Suppose only two unordered pairs have initial evidence.
+Pair \(\{Y_1,Y_2\}\) has one significant positive direction, conditional on
+\(R_1\), with \(\WPG_{12}=0.40\).
+Pair \(\{Y_1,Y_3\}\) has two significant negative directions, with
+\(\WPG_{13}=-0.80\). All other directions are nonsignificant.
+
+SCREEN J selects \(\{Y_1,Y_2\}\) in its one-positive stage.
+Suppressing rows 1 and 2 leaves the \(R_3\) direction of
+\(\{Y_1,Y_3\}\), which remains eligible in the original two-negative stage.
+Both pairs are selected as LD evidence.
+The manuscript selects \(\{Y_1,Y_3\}\) first, suppresses row 1, and loses
+the only significant direction of \(\{Y_1,Y_2\}\).
+This example concerns evidence selection before the separate negative-LD
+model-reporting policy in Section~\ref{sec:negative}.
+
+\textbf{Example 2: original counts versus reclassification.}
+Suppose pairs \(\{Y_1,Y_2\}\), \(\{Y_1,Y_3\}\), and
+\(\{Y_3,Y_4\}\) each have two significant positive directions, with weighted
+gammas \(0.90,0.80,0.70\), respectively. No other pair has evidence.
+Both procedures first select \(\{Y_1,Y_2\}\).
+
+SCREEN J still treats \(\{Y_1,Y_3\}\) as an originally two-positive pair
+and selects it next. The remaining \(R_4\) direction then permits selection
+of \(\{Y_3,Y_4\}\). The manuscript reclassifies \(\{Y_1,Y_3\}\) as a
+one-direction pair, selects \(\{Y_3,Y_4\}\) next, and suppresses the last
+active direction of \(\{Y_1,Y_3\}\).
+The selected sets are
+\[
+ \mathcal G_{\mathrm{DIGRAM}}=\{12,13,34\},\qquad
+ \mathcal G_{\mathrm{manuscript}}=\{12,34\},
+\]
+where \(ii'\) abbreviates \(\{Y_i,Y_{i'}\}\).
+These hypothetical summaries isolate control-flow differences; they are
+not asserted to be the output of newly fitted datasets.
+
+\finding{Mixed signs, ties, and termination}
+The manuscript's four active lists exclude a pair with two significant
+directions of opposite sign. Such a pair is neither two-positive,
+two-negative, nor exactly one significant direction. If only such pairs
+remain, its loop has active hypotheses but no eligible maximizer.
+
+The source counts signs separately. A mixed-sign pair has \(N_+=N_-=1\);
+its active sign and the sign of its fixed pooled gamma determine eligibility
+in the corresponding stage. Positive stages require \(\WPG>0\); negative
+stages require \(\WPG<0\). Maximizing absolute gamma without these conditions
+is different. These cases are not claimed to occur in the manuscript's
+data examples.
+
+Opposite directional signs are possible even with positive marginal
+item associations. As a concrete counting illustration, consider three
+binary items with the following frequencies:
+\begin{center}
+\begin{tabular}{@{}cccccccc@{}}
+\toprule
+\(000\)&\(001\)&\(010\)&\(011\)&\(100\)&\(101\)&\(110\)&\(111\)\\
+\midrule
+20&2&1&3&3&1&2&20\\
+\bottomrule
+\end{tabular}
+\end{center}
+The pattern digits are \(Y_1Y_2Y_3\). Direct pair counting gives
+\[
+ \gamma_{12}^{(1)}=\frac{4-1}{4+1}=0.6,\qquad
+ \gamma_{12}^{(2)}=\frac{4-9}{4+9}=-\frac5{13},\qquad
+ \WPG_{12}=-\frac19.
+\]
+All three marginal item-pair gammas are positive.
+Scaling the frequencies preserves these coefficients and can make both
+nonzero directional associations asymptotically significant.
+The missing mixed-sign case is therefore not merely an impossible input.
+
+The source scans \(i<i'\) in item order and updates the best pair only on a
+strict improvement, retaining the first exact tie. The manuscript's
+\(\arg\max\) does not specify tie-breaking.
+DIGRAM exits after exhausting its four eligible stages, which need not mean
+all temporary significant entries have been suppressed.
+Its coefficient assignments are guarded by a positive denominator; this is
+not a fully specified recovery rule for an undefined weighted gamma.
+\trace{\path{Appendix - algorithms.tex}, lines 126--210}
+{\src{S7}{2402--2425, 2435--2439, 2448--2458, 2487--2491,
+ 2522--2526, 2557--2584}; \src{STAT}{1004--1030}}
+
+\section{Steps 3(b) and 3(c): DIF purification}
+\label{sec:dif}
+\finding{The passes share a changing DIF matrix}
+Let \(\mathcal E_0\subseteq\Iset\times\{X_1,\ldots,X_m\}\) be the initial
+DIF relations. The manuscript runs two independent reductions of
+\(\mathcal E_0\), then retains their intersection. It explicitly states
+that their order does not matter.
+
+DIGRAM uses the following sequence:
+\begin{enumerate}
+\item For each \(X_j\), form its current item set \(\DIF(X_j)\),
+apply the all-items exception below if needed, and run the per-covariate
+item-pruning procedure when applicable: manuscript Step 3(c).
+\item Write each reduced set directly into the shared DIF matrix.
+\item For each \(Y_i\), form \(\SRC(Y_i)\) from that already reduced
+matrix and run the per-item source-pruning procedure when applicable:
+manuscript Step 3(b).
+\item Write these reductions into the same matrix.
+The outer pair of passes is not iterated to convergence.
+\end{enumerate}
+Let \(\mathsf P_b^{D},\mathsf P_c^{D}\) denote the source's two reductions,
+including its all-items handling in \(\mathsf P_c^{D}\), and let
+\(\mathsf P_b^{M},\mathsf P_c^{M}\) denote the manuscript's reductions.
+The resulting relations are
+\[
+ \mathcal E_{\mathrm{DIGRAM}}
+ =\mathsf P_b^{D}\bigl(\mathsf P_c^{D}(\mathcal E_0)\bigr),\qquad
+ \mathcal E_{\mathrm{manuscript}}
+ =\mathsf P_b^{M}(\mathcal E_0)\cap\mathsf P_c^{M}(\mathcal E_0).
+\]
+Even if the individual reduction rules were matched, composing the passes
+need not equal intersecting their independent results.
+Deleting a relation changes the conditioning sets available to the
+subsequent pass. The statistic and all-items exceptions described below
+also make the individual source and manuscript reductions different.
+\trace{\path{article.tex}, lines 279--285 and 709}
+{\src{S7}{3036--3105, 3116--3155}}
+
+\finding{The hypotheses agree for identical candidate sets}
+For a fixed per-covariate set \(\mathcal D_j\), the first source pass tests
+\[
+ Y_i\ind X_j\mid S,\ \mathcal D_j\setminus\{Y_i\},
+ \qquad Y_i\in\mathcal D_j.
+\]
+For a fixed per-item source set \(\mathcal S_i\), the second tests
+\[
+ Y_i\ind X_j\mid S,\ \mathcal S_i\setminus\{X_j\},
+ \qquad X_j\in\mathcal S_i.
+\]
+These are the forms described for manuscript Steps 3(c) and 3(b).
+The differences concern which sets enter the tests and the decision p-value.
+
+Within each invoked purification routine, all tests for the current set
+are performed before at most one candidate is removed.
+The source removes the candidate with the largest decision p-value if it
+exceeds \(0.05\), rebuilds the table, and repeats.
+The manuscript's one-at-a-time removal after a complete pass agrees.
+For equal largest decision p-values, the source chooses the first candidate
+in source order because its running maximum changes only on a strict
+increase. The manuscript does not specify a tie-breaking rule.
+\trace{\path{article.tex}, lines 279--283;
+ \path{Appendix - algorithms.tex}, lines 267--321}
+{\src{S13}{686--773, 1108--1195}}
+
+\finding{The decision p-value combines two tests}
+\label{sec:decisionp}
+Write \(p_\chi\) for the configured contingency-table p-value and
+\(p_{\gamma,2}\) for the two-sided gamma p-value.
+In asymptotic mode, both source purification routines use
+\[
+ p_{\mathrm{decision}}=\min\{p_\chi,p_{\gamma,2}\}.
+\]
+The follow-up result slot 6 is a one-tail gamma probability, so the code
+forms \(p_{\gamma,2}=2\,\texttt{Results}[6]\).
+This differs from the already two-sided slot 6 of the initial
+\texttt{XYZ\_bias\_ANALYSE} results.
+In simulation mode, the follow-up rule takes the minimum of slots 4 and 9.
+
+The manuscript instead describes the partial-gamma p-value as the decision
+value. For example, \(p_{\gamma,2}=0.20\) and \(p_\chi=0.01\) give a source
+decision value of \(0.01\). Gamma-only elimination could discard the
+candidate. The minimum-p rule can also change which candidate is removed
+first and thus all later conditioning sets.
+
+These removal thresholds are \(0.05\), not the initial \(c_{.05}\).
+BH values printed for follow-up diagnostics do not replace the explicit
+\(p_{\max}>0.05\) pruning condition. Stage-specific type handling and
+suppressed gamma calculations are discussed in Section~\ref{sec:inference}.
+\trace{\path{article.tex}, line 280;
+ \path{Appendix - algorithms.tex}, lines 284--295}
+{\src{S13}{732--773, 1154--1195};
+ \src{XYZ}{805--814}; \src{S3}{614--627}}
+
+\finding{The all-items-DIF exception changes the candidate set}
+For a covariate with \(\lvert\DIF(X_j)\rvert=k\) initially, DIGRAM sets
+\[
+ \DIF(X_j)\leftarrow
+ \{Y_i:p_{ij}^{\mathrm{DIF}}\le c_{.01}\}.
+\]
+This uses the \(1\%\) cutoff from the same initial global BH family,
+not an unadjusted \(0.01\) rule or a newly fitted test.
+
+If all \(k\) items still survive, the source warns and bypasses ordinary
+per-covariate item purification for that covariate.
+A set with two to \(k-1\) members is purified. An empty set or incoming
+singleton does not trigger the routine.
+The resulting matrix still feeds the subsequent per-item source pass.
+No corresponding exception appears in the manuscript's Step 3(c) description.
+\trace{\path{article.tex}, lines 282--285}
+{\src{S7}{2391--2395, 3053--3103}}
+
+\finding{Singletons do not universally receive new purification tests}
+SCREEN J invokes either purification routine only when its incoming list
+has more than one candidate, subject to the all-items exception.
+An incoming singleton is carried forward without a new call.
+Thus not every DIF pair receives two new purification p-values.
+
+This is an entry condition, not a rule protecting the final member of an
+invoked DIF routine. Once purification has started, its internal loop can
+retest a reduced singleton and remove it.
+The score-effect routine has a different stopping rule
+(Section~\ref{sec:step4}).
+\trace{\path{article.tex}, lines 285 and 615--627;
+ \path{Appendix - data example.tex}, lines 55--62}
+{\src{S7}{3081--3101, 3133--3153}; \src{S13}{491--773, 944--1195}}
+
+\finding{The hypothetical DIF example follows a different test history}
+The manuscript starts with
+\[
+ \SRC(A)=\{X,Z\},\quad \SRC(C)=\{X\},\quad \SRC(E)=\{Z\},
+\]
+or \(\DIF(X)=\{A,C\}\), \(\DIF(Z)=\{A,E\}\).
+Its illustrated per-covariate pass removes C--X and A--Z, leaving A--X
+and E--Z.
+
+Conditional on those illustrated decisions, SCREEN J's next per-item pass
+sees singleton source lists. It would not execute the manuscript's
+earlier illustrated tests
+\[
+ A\ind X\mid S,Z,\qquad A\ind Z\mid S,X.
+\]
+The final edge set can happen to agree while the test history differs.
+This comparison holds the illustrated decisions fixed to isolate the
+pass-order issue; DIGRAM's minimum-p statistic could itself change them.
+\trace{\path{article.tex}, lines 289--401}
+{\src{S7}{3088--3093, 3124--3153}}
+
+\section{Step 4: associations between score and covariates}
+\label{sec:step4}
+\finding{Marginal preselection precedes conditional elimination}
+\man The algorithm begins with the candidate covariate set \(\mathcal C\)
+and tests \(S\ind X_j\mid\mathcal C\setminus\{X_j\}\) for every member.
+No preliminary marginal selection rule is defined.
+
+\dig The source clears its selected score-effect vector, scans all
+exogenous variables, and tests each marginal association \(S\ind X_j\).
+It initializes
+\[
+ \mathcal C_0=\{X_j:
+ \min(p_{\chi,j}^{\mathrm{marg}},p_{\gamma,2,j}^{\mathrm{marg}})\le0.05\}.
+\]
+Only members of \(\mathcal C_0\) enter conditional backward elimination.
+
+\effect A covariate whose association appears only after adjustment can
+enter and survive the manuscript's procedure but fail DIGRAM's marginal
+filter. Changing the initial conditioning set can also alter tests for
+other covariates. An older \(0.01\) option is commented out in the source;
+the examined implementation uses \(0.05\).
+\trace{\path{article.tex}, lines 407--410;
+ \path{Appendix - algorithms.tex}, lines 340--355}
+{\src{S13}{1335--1346, 1382--1395, 1527--1529, 1568--1588}}
+
+\finding{The statistic and stopping rule differ}
+With more than one selected effect, DIGRAM tests
+\[
+ S\ind X_j\mid\mathcal C_t\setminus\{X_j\},\qquad X_j\in\mathcal C_t,
+\]
+and removes the candidate with the largest
+\(\min(p_\chi,p_{\gamma,2})\) when that value exceeds \(0.05\).
+This is separate from the initial LD/DIF BH family.
+
+The manuscript uses gamma alone and loops while \(\mathcal C\ne\varnothing\).
+DIGRAM stops conditional elimination when at most one candidate remains.
+The singleton has already passed marginal selection.
+A final conditional-loop singleton retest, such as the last row of the
+AKQoL Step 4 table, is not a separate source pruning iteration.
+When an elimination leaves one candidate, its stored score--covariate
+gamma remains the value from the last conditional table; the source does
+not recompute a final marginal gamma. Equal largest decision p-values
+are resolved by choosing the first candidate in source order.
+
+The hypotheses and removal of at most one candidate per completed pass
+otherwise agree for identical input sets.
+Marginal and conditional tables have their own record-selection rules,
+so identical observations cannot be assumed when covariates have missing values.
+\trace{\path{Appendix - algorithms.tex}, lines 347--366;
+ \path{article.tex}, lines 631--645}
+{\src{S13}{1660--1664, 1858--1863, 1883--1929}}
+
+\section{Step 5: graph construction and treatment of negative LD}
+\label{sec:step5}
+\finding{SCREEN J reports evidence without replacing the current model}
+The manuscript assembles a graphical log-linear Rasch model (GLLRM),
+an item response theory (IRT) graph, and a moralized marginal graph.
+SCREEN J itself does not perform that construction. Its command handler
+reports positive LD, negative LD, DIF, and score associations, then restores
+the previously saved LD and DIF matrices.
+
+The related non-J branch initializes graph structures and defines a model.
+This establishes the scope difference; it does not establish that the
+manuscript's graph-building code reproduces every detail of that separate
+branch. The ordinal-model formulas in the manuscript's appendix describe
+a statistical model, while SCREEN J is a screening operation and does not
+fit its interaction parameters.
+\trace{\path{article.tex}, lines 412--417 and 649--665;
+ \path{Appendix - general item response model.tex}, lines 21--32}
+{\src{CMD}{1793--1804, 1809--1922}; \src{S7}{3286--3301}}
+
+\finding{Selected negative LD is excluded from model reporting}
+\label{sec:negative}
+For a selected pair, the source command handler uses the sign of the
+sum of the initial cached directional gammas,
+\[
+ \gamma_{ii'}^{(i)}+\gamma_{ii'}^{(i')}
+\]
+to distinguish positive from nonpositive LD. If that sum is nonpositive,
+the relation is put in the negative-LD report with the statement that it
+is not included in the model. This classification uses the unweighted sum;
+Step 3(a) ranks pairs using the weighted gamma.
+
+The manuscript retains selected negative associations as model edges.
+Q3--Q10 has initial weighted gamma \(-0.694\), appears in its tentative
+and final GLLRM, and subsequently has two negative Step 6 estimates,
+\(-0.611,-0.755\). The latter are final graph checks and must not be
+substituted for the initial directional values in DIGRAM's reporting rule.
+The manuscript gives only one initial directional estimate for this pair.
+Determining its exact source classification requires both initial values;
+a negative weighted gamma alone does not establish that their unweighted
+sum is nonpositive.
+
+The treatment of evidence of negative LD and a retained model interaction
+is therefore a substantive policy difference. Because SCREEN J ultimately
+restores the current model, this does not mean it directly edits a final
+fitted GLLRM.
+\trace{\path{article.tex}, lines 600--611, 650--665, and 690--697}
+{\src{CMD}{1818--1853, 1918--1922}}
+
+\section{Step 6: comparison with the separate graph checks}
+\label{sec:step6}
+\finding{There is no final C5/C7/C9 stage in SCREEN J}
+After DIF and score screening, SCREEN J reports warnings when an LD pair's
+items share a DIF source, caches partial statistics, and finishes.
+It does not apply the manuscript's rule of retaining an LD edge when
+at least one final direction is significant.
+The AKQoL Step 6 removal of Alder--Q4 is not a SCREEN J operation.
+
+For the remaining comparisons in this section, the reference is explicitly
+DIGRAM's separate CHECK I machinery. CHECK I invokes LD checks for present
+edges and local-independence checks for absent edges, along with checks of
+retained DIF and no-DIF assumptions. It records and reports statistics.
+Its active loop does not delete model edges under the manuscript's rule.
+\trace{\path{article.tex}, lines 420--428 and 669--711}
+{\src{S7}{3233--3301}; \src{CMD}{3382--3393};
+ \src{EXE}{4577--4646}}
+
+\finding{LD-check DIF sources come from the other side of the component split}
+Remove \(\{Y_a,Y_b\}\), and let \(C_a,C_b\) be the remaining LD components
+containing its endpoints. For distinct components, the manuscript's
+explanation corresponds to
+\begin{align}
+ Y_a&\ind Y_b\mid S_{C_a^c},\ \SRC(C_a),\label{eq:ld-man-a}\\
+ Y_a&\ind Y_b\mid S_{C_b^c},\ \SRC(C_b).\label{eq:ld-man-b}
+\end{align}
+The manuscript's displayed \(\DIF(C_a)\) is interpreted here according
+to its prose as sources of DIF for the component's items.
+
+The source's \texttt{remove\_component} first removes the component's items
+from the score indicator vector, then collects sources of DIF for items
+\emph{still included in that score}. Its tests are
+\begin{align}
+ Y_a&\ind Y_b\mid S_{C_a^c},\ \SRC(C_a^c),\label{eq:ld-dig-a}\\
+ Y_a&\ind Y_b\mid S_{C_b^c},\ \SRC(C_b^c).\label{eq:ld-dig-b}
+\end{align}
+The subscore definitions agree; the additional DIF covariate sets differ.
+Renaming the overloaded \(\DIF(C)\) alone would not resolve this.
+\trace{\path{article.tex}, lines 428 and 488--498}
+{\src{S13}{2350--2363, 2512--2527, 2850--2882}}
+
+In the A--B example,
+\[
+ C_A=\{A,D,C\},\quad C_B=\{B\},\quad
+ \SRC(C_A)=\{X\},\quad \SRC(C_B)=\{X,Z\}.
+\]
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{0.24\linewidth}XX@{}}
+\toprule
+Excluded component & Manuscript conditioning & DIGRAM LDCheck conditioning\\
+\midrule
+\(\{A,D,C\}\) & \(S_{\{B\}},X\) & \(S_{\{B\}},X,Z\)\\
+\(\{B\}\) & \(S_{\{A,D,C\}},X,Z\) & \(S_{\{A,D,C\}},X\)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+This table compares the stated sets; the first row also has a degeneracy
+discussed in Section~\ref{sec:exampleissues}.
+
+\finding{The source DIF check conditions on all other biased items}
+The manuscript's C5 hypothesis is
+\begin{equation}
+ Y_i\ind X_j\mid
+ S,\ \DIF(X_j)\setminus\{Y_i\},\
+ \SRC(Y_i)\setminus\{X_j\}.
+ \label{eq:dif-man}
+\end{equation}
+DIGRAM's separate \texttt{DIFCheck} marks every other item having any retained
+DIF source. It forms a common table with those items, the tested item's
+sources, and the score, then conditions on all variables except the tested
+item--source pair. In the notation of Section~\ref{sec:notation}, this is
+\begin{equation}
+ Y_i\ind X_j\mid
+ S,\ \mathcal B_{\mathrm{all}}\setminus\{Y_i\},\
+ \SRC(Y_i)\setminus\{X_j\}.
+ \label{eq:dif-dig}
+\end{equation}
+The source part agrees, but the conditioned item set can be larger in DIGRAM:
+an item having DIF from another covariate is still included.
+
+For the tentative AKQoL structure, the source would check
+\[
+ Q4\ind\texttt{Alder}\mid S,Q5,\qquad
+ Q5\ind\texttt{woman}\mid S,Q4.
+\]
+The manuscript's C5 formula conditions only on \(S\) for these relations.
+Similarly, the hypothetical check of B against Z includes C in DIGRAM
+because C has DIF from X, giving \(B\ind Z\mid S,C,X\).
+The manuscript's table instead gives \(B\ind Z\mid S,X\).
+These are different hypotheses, not replacement numerical results.
+\trace{\path{article.tex}, lines 421--426, 441, 616--624, and 675--678}
+{\src{S13}{3736--3803, 3940--3945, 4015--4021, 4064--4072}}
+
+\finding{General graph checks have additional guards and data restrictions}
+After removing the tested LD edge, \texttt{LDCheck} skips its component
+tests when \(C_a=C_b\), as occurs for an edge on an LD cycle.
+The manuscript's general instruction to test every retained pair has
+no such exception.
+
+This guard can be irrelevant to a graph obtained solely by SCREEN J's
+LD-selection rule: each new selection requires at least one unsuppressed
+endpoint row and therefore introduces a previously unused endpoint.
+Such selection cannot close an LD cycle.
+The guard remains relevant for a general supplied graph and is not asserted
+to cause a discrepancy in the data examples.
+
+Both source graph-check routines use \texttt{GET\_GOOD\_ITEMS} and therefore
+require a valid, non-extreme total score in the configured range.
+The LD test additionally keeps only
+\[
+ 0<S_{C_a^c}<|C_a^c|\,\texttt{item\_max}
+\]
+in the first direction, with the analogous rule in the second.
+The upper bound is written as implemented; it is not silently replaced by
+a sum of heterogeneous item maxima. These restrictions are absent from the
+manuscript's general Step 6 description.
+\trace{\path{article.tex}, line 428}
+{\src{S13}{2485--2487, 2601--2612, 2809--2847, 3862--3872};
+ \src{S2}{3388--3403}}
+
+\finding{The SPADI pain checks are not redundant under the source rule}
+The pain example retains P3--P4 LD and P1--\texttt{over60} DIF.
+Removing P3--P4 leaves components \(\{P3\}\) and \(\{P4\}\).
+Both complementary subscores contain P1. The source LD checks therefore
+additionally condition on \texttt{over60}:
+\[
+ P3\ind P4\mid S-P3,\ \texttt{over60},\qquad
+ P3\ind P4\mid S-P4,\ \texttt{over60}.
+\]
+The initial Step 2 tests condition only on the respective rest-score.
+These are different hypotheses, so DIGRAM's rule does not justify the
+manuscript's statement that the final checks are redundant for both subscales.
+
+For disability D4--D5, the example has no retained DIF. This particular
+conditioning-set objection does not apply there.
+Even matching symbolic hypotheses would not guarantee identical numeric
+tests without matching record filters and inference conventions.
+\trace{\path{Appendix - data example.tex}, lines 19, 47, 62, and 308}
+{\src{S13}{2350--2363, 2604--2612, 2850--2882}}
+
+\section{Internal example and reproducibility issues}
+\label{sec:exampleissues}
+The following findings concern consistency within the manuscript.
+They should be distinguished from direct disagreement with SCREEN J.
+
+\finding{An adjusted p-value above 0.05 is carried forward}
+The AKQoL initial DIF table gives Q4--Alder raw \(p=0.0031\) and
+\(p_{\mathrm{adj}}=0.062\), but the text counts it among the two flagged
+DIF relations and carries it forward.
+If the displayed adjusted p-value is the decision value under the stated
+\(5\%\) criterion, that decision does not follow.
+
+The source comparison does not identify the intended correction.
+The adjustment family, candidate-generation threshold, or table needs
+reconciliation. The displayed values alone do not identify the adjustment
+method that was actually used.
+\trace{\path{article.tex}, lines 259, 568--580, and 615--627}
+{\src{S7}{2385--2389, 2965--2991}}
+
+\finding{The same stated DIF hypothesis has different reported p-values}
+Each of Q4--Alder and Q5--\texttt{woman} is the only DIF relation for its
+item and source in the tentative AKQoL model.
+The manuscript's C5 formula therefore reduces to
+\[
+ Q4\ind\texttt{Alder}\mid S,\qquad
+ Q5\ind\texttt{woman}\mid S,
+\]
+the initial DIF hypotheses.
+The raw p-values nevertheless change from \(0.0031,0.0008\) to
+\(0.051,0.032\), while the gammas remain \(0.383,0.727\).
+
+With the same observations, test, variance, tail convention, and adjustment
+status, a repeated hypothesis should reproduce the same p-value.
+A change in any of those ingredients could explain the different values,
+but it must be stated. Equal gamma estimates alone do not prove that the
+inferential calculations were identical.
+DIGRAM's larger item-conditioning set in \eqref{eq:dif-dig} defines another
+possible test; it does not validate these particular numbers.
+\trace{\path{article.tex}, lines 421--426, 623--627, and 675--681}
+{\src{S13}{3736--3803, 4064--4072}}
+
+\finding{The hypothetical Step 6 example has two distinct problems}
+First, the LD table implies retaining A--B and C--D and removing A--D under
+the manuscript's at-least-one-significant-direction rule.
+The prose and final graph instead retain A--D and remove C--D.
+This contradiction is already identified by the margin TODO.
+
+Second, the example defines \(C_A^c=\{B\}\), hence \(S_{C_A^c}=B\).
+Its first purported LD test conditions on B itself:
+\[
+ A\ind B\mid B,X.
+\]
+This conditional independence is automatic. B is constant within every
+conditioning stratum, so there are no comparable pairs for a nontrivial
+partial-gamma test. The significant p-value \(0.016\) cannot represent
+that displayed partial-gamma test. Adding Z, as the source's LD-check rule
+requires, does not remove the degeneracy.
+
+For binary items with \(\texttt{item\_max}=1\), DIGRAM's additional
+exclusion of extreme complementary subscores would also leave no
+observations for this direction.
+For ordinal B, conditioning on B still removes its within-stratum variation.
+Thus the example needs a check of its test setup as well as its final edges.
+\trace{\path{article.tex}, lines 488--522}
+{\src{S13}{2604--2612}; the degeneracy also follows directly from the
+displayed manuscript hypothesis}
+
+\finding{The subscore count needs a precise definition}
+The manuscript states that excluding the item under consideration and the
+zero subscore leaves \(2^{k-1}\) subscores.
+There are \(2^{k-1}-1\) nonempty subsets of the remaining \(k-1\) items.
+Distinct subsets can also give the same realized numerical scores.
+The count should therefore specify whether it concerns subset definitions
+or distinct observed score variables.
+This issue is already marked by a TODO and is separate from the source's
+non-exhaustive screening scope.
+\trace{\path{article.tex}, lines 701--702}
+{\src{S7}{2943--3008}; Section~\ref{sec:step1} of this note}
+
+\section{Inference and implementation details for numerical reproduction}
+\label{sec:inference}
+The manuscript explicitly chooses asymptotic inference.
+The existence of a simulation option in DIGRAM is not itself a discrepancy.
+However, matching that choice does not match all numerical conventions.
+The details below extend the step-by-step comparison where a generic
+instruction to compute gamma or a p-value is insufficient.
+
+\finding{Result slots and tails differ between initial and follow-up tests}
+\begin{center}
+\begin{tabularx}{\linewidth}{@{}L{0.29\linewidth}XX@{}}
+\toprule
+Decision stage & Asymptotic source value & Simulation source value\\
+\midrule
+Initial gamma & \(\texttt{Bias}[6]\), already two-sided &
+\(\texttt{Bias}[7]\)\\
+Initial nominal DIF & \(\texttt{Bias}[3]\) & \(\texttt{Bias}[4]\)\\
+DIF purification and score screening &
+\(\min(\texttt{BT}[3],\,2\texttt{BT}[6])\) &
+\(\min(\texttt{BT}[4],\,\texttt{BT}[9])\)\\
+\bottomrule
+\end{tabularx}
+\end{center}
+Here \texttt{Bias} denotes the initial \texttt{XYZ\_bias\_ANALYSE}
+result structure and \texttt{BT} the follow-up big-table result structure.
+The slot numbers identify implementation outputs, not model parameters.
+The competing \(p_\chi\) comes from the configured contingency-table test.
+Within conditioning strata, its statistics and degrees of freedom are
+summed before evaluating the pooled asymptotic chi-square tail.
+\trace{\path{article.tex}, line 235;
+ \path{Appendix - algorithms.tex}, lines 284--295 and 353--355}
+{\src{S3}{483--503, 614--627}; \src{XYZ}{805--814, 1693--1717};
+ \src{S13}{732--750, 1154--1172, 1883--1901};
+ \src{STAT}{2324--2392}}
+
+\finding{The source variance and normal-tail conventions are explicit}
+In stratum \(\ell\), let \(n_{uv,\ell}\) be the count in cell \((u,v)\)
+and \(n_\ell=\sum_{uv}n_{uv,\ell}\).
+Let \(a_{uv,\ell}\) and \(d_{uv,\ell}\) count observations concordant and
+discordant, respectively, with a response in that cell. Then the source uses
+\[
+ \mathrm{PMQ}_\ell=\sum_{uv}n_{uv,\ell}(a_{uv,\ell}-d_{uv,\ell}),\quad
+ \mathrm{PPQ}_\ell=\sum_{uv}n_{uv,\ell}(a_{uv,\ell}+d_{uv,\ell}),
+\]
+which equal \(2(C_\ell-D_\ell)\) and \(2(C_\ell+D_\ell)\).
+For a nonempty stratum with comparable pairs, its variance numerator is
+\[
+ v_\ell=4\left[
+  \sum_{uv}n_{uv,\ell}(a_{uv,\ell}-d_{uv,\ell})^2
+  -\frac{\mathrm{PMQ}_\ell^2}{n_\ell}
+ \right].
+\]
+The partial routines pool these terms and use
+\[
+ \widehat V(\widehat\gamma)
+ =\frac{\sum_\ell v_\ell}{(\sum_\ell\mathrm{PPQ}_\ell)^2}.
+\]
+Ordinarily, the test uses
+\(U=|\widehat\gamma|/\sqrt{\widehat V(\widehat\gamma)}\).
+If the pooled denominator is positive but the variance is nonpositive,
+the code instead assigns \(U=4\).
+If \(U>4\), it assigns the one-tail probability \(10^{-6}\), rather than
+evaluating the normal tail beyond 4. Otherwise it calls its normal-tail
+routine. The two-sided decision probability is formed as described above.
+
+These are preserved implementation conventions, not recommendations for
+a new inference method. A conventional unmodified normal-tail calculation
+can disagree numerically even when the gamma coefficient matches.
+The manuscript does not specify the variance or these boundary conventions.
+\trace{\path{Appendix - algorithms.tex}, lines 63--70;
+ \path{Appendix - association measures.tex}, lines 7--15}
+{\src{STAT}{1004--1030, 1296--1334};
+ \src{S3}{486--522}; \src{XYZ}{786--814}}
+
+\finding{Undefined and unavailable tests use sentinels, not NA}
+When pooled comparable-pair counts are zero, the initial partial-gamma
+routine has gamma initialized to zero and assigns a one-tail probability
+of 1. Its stored two-sided value is therefore 2, without truncation to 1.
+This is a sentinel-like non-rejection value, not a valid ordinary p-value.
+The manuscript instead returns \(\mathrm{NA}\) and does not define its
+subsequent treatment.
+
+In follow-up \texttt{XYZ\_TEST}, zero effective sample size or zero total
+degrees of freedom invokes \texttt{NoResults}, setting gamma to 0 and
+result slots 3, 4, 6, and 7 to 2.
+The asymptotic pruning comparison consequently gives
+\(\min(2,2\cdot2)=2\), hence nonsignificance.
+An empty or oversized multidimensional table can instead cause an earlier
+routine exit, so not every no-data event is an ordinary elimination step.
+
+An exact-mode boundary requires further caller-state inspection:
+\texttt{NoResults} does not assign slot 9, although exact purification
+normally reads it. This note records that omission without claiming a
+particular resulting exact p-value or demonstrating a runtime error.
+The manuscript's asymptotic scope does not require resolving that
+simulation-only boundary.
+\trace{\path{Appendix - algorithms.tex}, lines 30--37 and 59--61}
+{\src{S3}{447--448, 508--522, 619--627};
+ \src{XYZ}{960--975, 1697--1712};
+ \src{S13}{567--568, 680--681, 732--750}}
+
+\finding{Variable types are handled differently across source stages}
+The source does not follow a single universal nominal/ordinal rule:
+\begin{enumerate}
+\item Initial DIF selects gamma for binary or ordinal covariates and
+the contingency-table statistic otherwise.
+\item Per-covariate DIF-item purification retains the exogenous variable's
+original type and assigns items type 3. For a multilevel nominal covariate,
+the gamma test is suppressed, so in asymptotic mode the minimum-p decision
+effectively uses the contingency-table test. In simulation mode, the
+unassigned-slot-9 qualification above also matters when gamma is suppressed.
+\item Per-item multiple-source purification assigns every source type 3
+in the tested table, although it separately remembers original types for
+reporting.
+\item Both marginal and conditional score screening assign their exogenous
+variables type 3.
+\end{enumerate}
+Thus the latter stages can calculate an order-dependent gamma even for a
+covariate originally marked nominal. This describes the preserved source;
+it is not an endorsement of assigning an order to nominal categories.
+The manuscript's gamma-only formulation is different, but replacing it
+with an unconditional nominal-always-chi-square description would still
+not reproduce these source paths.
+\trace{\path{article.tex}, lines 235 and 279--285;
+ \path{Appendix - algorithms.tex}, line 353}
+{\src{BV}{1680--1688}; \src{S7}{460--477};
+ \src{S13}{515--540, 953--964, 1388--1394, 1694--1704};
+ \src{XYZ}{751--755, 1716--1717}}
+
+\finding{Tables can use different observations after a candidate is removed}
+The per-covariate DIF pass requires valid item responses, a non-extreme
+allowed total score, and the target covariate's value.
+The per-item multiple-source pass requires values of all sources in its
+current candidate set, including the source being tested. It rebuilds the
+table after a removal.
+Dropping a source with missing values can therefore admit observations
+that were previously excluded.
+
+Score screening likewise uses one source's valid values for a marginal
+table but all retained sources' values for a conditional table.
+It includes extreme total scores.
+There is also a literal capacity-boundary difference: its marginal pass
+caps scores \(S\ge\texttt{maxdim}\) at \(\texttt{maxdim}-1\), whereas the
+conditional pass excludes \(S\ge\texttt{maxdim}\).
+These details can be irrelevant in a small complete dataset, but they must
+not be silently replaced by a universal fixed-sample assumption.
+\trace{\path{article.tex}, line 562;
+ \path{Appendix - algorithms.tex}, lines 13--37 and 343--355}
+{\src{S13}{620--642, 1050--1069, 1458--1479, 1765--1784}}
+
+\finding{Simulation inference adds further matching requirements}
+The manuscript uses asymptotic tests, so this is a reproducibility extension
+for any later comparison using DIGRAM's exact or repeated-simulation modes.
+The source counts simulated contingency-table statistics at least as large
+as the observed statistic, and absolute simulated gammas at least as large
+as the observed absolute gamma. It divides exceedance counts by simulations
+performed, without an add-one correction.
+Follow-up result slot 7 is directional; slot 9 is the two-sided
+absolute-gamma result read by purification.
+
+Matching simulation output requires the simulation count, generator and
+random state, table generation, and sequential-stopping settings.
+A change in those settings is not a demonstrated disagreement in the
+manuscript's asymptotic examples.
+\trace{\path{article.tex}, line 235}
+{\src{S3}{121--145}; \src{XYZ}{839--865, 1721--1789};
+ \src{S13}{736--745, 1158--1167}}
+
+\section{Source catalog}
+\label{sec:sources}
+All original-source paths below are relative to
+\path{../digram/source/digram_source_20260817/}.
+Line numbers refer to the baseline in Section~\ref{sec:scope}.
+Printed paths and line numbers keep this document usable on Overleaf
+without requiring the sister repository as a compilation dependency.
+
+\begin{longtable}{@{}L{0.09\linewidth}L{0.32\linewidth}L{0.52\linewidth}@{}}
+\toprule
+Key & Original file & Relevant role\\
+\midrule
+\endfirsthead
+\toprule
+Key & Original file & Relevant role\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+\hypertarget{source-CMD}{CMD} & \path{scd/DIGRAM1f.pas} &
+SCREEN J dispatch, saved model state, negative-LD reporting,
+graph construction, and CHECK command dispatch.\\
+\hypertarget{source-EXE}{EXE} & \path{skunits/DGRexe.pas} &
+Screening wrapper and separate CHECK I execution loop.\\
+\hypertarget{source-S7}{S7} & \path{skunits/SKbias7.pas} &
+Initial LD/DIF tests, combined BH family, LD selection,
+DIF-pass orchestration, and screening summaries.\\
+\hypertarget{source-S13}{S13} & \path{skunits/SKbias13.pas} &
+DIF purification, score-effect selection, and separate LDCheck
+and DIFCheck routines.\\
+\hypertarget{source-S2}{S2} & \path{skunits/SKbias2.pas} &
+Item extraction, reversal, and valid-score filtering.\\
+\hypertarget{source-S3}{S3} & \path{skunits/SKbias3.pas} &
+Initial conditional test calculations and result slots.\\
+\hypertarget{source-MCA}{MCA} & \path{skunits/SKmca.pas} &
+BH sorting and raw-cutoff computation.\\
+\hypertarget{source-BV}{BV} & \path{skunits/BIASvars.pas} &
+Covariate-type interpretation, including the binary-variable rule.\\
+\hypertarget{source-STAT}{STAT} & \path{skunits/SkStat.pas} &
+Concordant/discordant counts, marginal gamma inference,
+and configured contingency-table statistics.\\
+\hypertarget{source-XYZ}{XYZ} & \path{skunits/SKxyz1.PAS} &
+Follow-up conditional tests and simulation conventions.\\
+\end{longtable}
+
+Manuscript references concern \path{article.tex},
+\path{Appendix - algorithms.tex},
+\path{Appendix - association measures.tex},
+\path{Appendix - multiple testing.tex},
+\path{Appendix - general item response model.tex}, and
+\path{Appendix - data example.tex}.
+Inactive older examples and source copies do not define the manuscript
+procedure in this comparison.
+\end{document}
