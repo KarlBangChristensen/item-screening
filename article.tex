@@ -39,6 +39,25 @@
   colframe=black!10!white
 }
 
+\usepackage{marginnote}
+\setlength{\marginparwidth}{2.2cm}
+\newcommand{\coauthortodo}[1]{%
+  \marginnote{%
+    \begin{tcolorbox}[
+      width=\marginparwidth,
+      colback=yellow!15!white, colframe=orange!70!black,
+      colbacktitle=yellow!35!white, coltitle=black,
+      title=TODO, fonttitle=\bfseries\scriptsize,
+      toptitle=2pt, bottomtitle=2pt,
+      fontupper=\scriptsize, boxrule=0.4pt, arc=1mm,
+      boxsep=0pt, left=2pt, right=2pt, top=3pt, bottom=3pt,
+      before skip=0pt, after skip=0pt
+    ]
+      \raggedright #1
+    \end{tcolorbox}%
+  }%
+}
+
 \usepackage{booktabs}
 \usepackage[round,authoryear]{natbib}
 \bibliographystyle{apalike}
@@ -494,6 +513,10 @@ We clearly see from the graph above, that the LD connections still available are
             \caption{Hypothetical tests to determine if LD edges should be retained.}
             \label{tab:step6_ld_example}
         \end{table}
+    \coauthortodo{\textbf{Step 6.} Please check the paragraph and final graph
+    against the table. The stated rule and $p$-values imply keeping $(A,B)$
+    and $(C,D)$, and removing $(A,D)$. The paragraph and graph reverse the
+    latter two decisions.}%
     Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(A,B)$ and $(A,D)$ are kept, while the edge between $(C,D)$ is removed. Thus, we are left with the final Step 6 graph below.
     \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
