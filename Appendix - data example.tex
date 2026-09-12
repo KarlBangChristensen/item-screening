@@ -3,28 +3,30 @@
 This appendix applies the full item screening procedure of Section~\ref{sec:it_sec} to a real dataset: the Shoulder Pain and Disability Index (SPADI).
 
 \subsection{Step 0: Getting Started}
-The screening procedure does not contain a Step $0$ explicitly, but naturally it is expected that the statistician gets familiar with the data at hand and potentially pre-processes it before any screening and/or analysis is performed.
+Before screening, we inspect the data and perform any necessary preprocessing. We refer to this preparation as Step 0, although it is not a formal step of the screening procedure.
 
 
-The dataset contains observations from participants answering a questionnaire with $13$ questions in total, five concerning pain and eight concerning disabilities. All items are scored on the discrete scale, $(0,1,2,3,4,5,6,7,8,9,10)$, with a higher number indicating a higher level of pain or disability associated with the given item. Beyond the item scores two exogenous variables ``gender'' and ``above60'' are present. The total number of observations available is $229$. From the $229$ observations, $213$ are complete with respect to item responses. The empirical distribution of missing values for the two exogenous variables, in the subset of complete item responses, is $0$ for both. Hence, we will be working with the entire $213$ cases throughout the screening. As per \cite{christensen-et-al-2019}, we will be splitting the dataset and treating the two sub-scales, pain and disability, as two different questionnaires, while also adhering to the proposal that we should map the possible scores from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. We will therefore move forward with two datasets, a $213\times 7$ pain questionnaire and a $213\times 10$ disability questionnaire. 
+The Shoulder Pain and Disability Index comprises $13$ items: five assess pain and eight assess disability. Responses range from $0$ to $10$, with higher scores indicating greater pain or disability. The dataset also contains two covariates, \texttt{gender} and \texttt{over60}.
+
+Of the $229$ respondents, $213$ have complete item responses. Neither covariate has missing values among these $213$ respondents, so all are included in the analysis. Following \citet{christensen-et-al-2019}, we analyze the pain and disability subscales separately and recode the response categories from $(0,1,2,3,4,5,6,7,8,9,10)$ to $(0,0,1,1,2,2,3,3,4,4,5)$. The resulting datasets have dimensions $213\times 7$ for pain and $213\times 10$ for disability, including the two covariates in each.
 
 
 \subsection{Step 1}
-Both sub-scales pass the M1 and M2 checks (results not shown). The exogenous variable "over60" fails the M3 check for both sub-scales. This means we should re-consider if it makes sense to continue. It would not, if we consider "over60" a criterion variable, however we do not. Thus we proceed.
+Both subscales pass the M1 and M2 checks (results not shown). The covariate \texttt{over60} fails M3 for both subscales. This would call further screening into question if age were treated as a criterion variable. We do not make that assumption here, so we proceed.
 
 
 \subsection{Step 2}
-During this step, we perform multiple tests. Naturally, we will control for the FDR using Benjamin-Hochbergs procedure. The disability sub-scale does not show any sign of DIF during this initial step of screening, however the pain sub-scale does. Item $P1$ and the exogenous covariate ``over60'' exhibit DIF with ( $\gamma=-0.43$, $p<0.001$). For the LD screening, the two sub-scales does exhibit some. The disability sub-scale has one instance of LD, between the pair $(D4,D5)$ for which both directions are significant. The pain sub-scale has two pairs exhibiting LD; $(P3,P4)$, which is significant in both directions, and $(P1,P4)$, which is only significant when conditioning on $R_{P4}$. 
+We control the false discovery rate using the Benjamini--Hochberg procedure. The initial screen finds no DIF in the disability subscale. In the pain subscale, item $P1$ shows DIF with respect to \texttt{over60} ($\gamma=-0.43$, $p<0.001$). Both subscales show evidence of LD. For disability, the pair $(D4,D5)$ is significant in both conditioning directions. For pain, $(P3,P4)$ is significant in both directions, whereas $(P1,P4)$ is significant only when conditioning on $R_{P4}$.
 
 \subsection{Step 3}
 \subsubsection{Step 3(a)}
-After the inclusion algorithm, we find the following pairs of genuine LD in the two sub-scales
+After the inclusion algorithm, we find the following pairs of genuine LD in the two subscales:
 \begin{table}[H]
     \centering
     \begin{minipage}{0.45\textwidth}
         \centering
         \begin{tabular}{c c c}
-            & Disability sub-scale & \\ 
+            & Disability subscale & \\
             \hline
             Item1 & Item2 & partial $\gamma$ \\ 
             \hline 
@@ -38,7 +40,7 @@ After the inclusion algorithm, we find the following pairs of genuine LD in the 
     \begin{minipage}{0.45\textwidth}
         \centering
         \begin{tabular}{c c c}
-            & Pain sub-scale & \\ 
+            & Pain subscale & \\
             \hline
             Item1 & Item2 & partial $\gamma$ \\ 
             \hline 
@@ -50,8 +52,8 @@ After the inclusion algorithm, we find the following pairs of genuine LD in the 
     \end{minipage}
 \end{table}
 
-\subsubsection{Step 3(b) and 3(c)}
-As the initial screening of DIF for the disability sub-scale did not disclose any evidence of DIF, we will only focus on the pain sub-scale in these two steps. Furthermore, we will be using the asymptotic $p$-values of the partial gamma coefficients for reproducibility purposes, and to stay as transparent as possible. However, since we only found one instance of DIF in the pain sub-scale, the elimination algorithm will report this exact DIF relation and terminate. %We therefore accept the evidence of DIF cf Table \eqref{tab:step_3bc_ex} below, as we are left with no choice.
+\subsubsection{Steps 3(b) and 3(c)}
+Because no DIF was detected in the disability subscale, Steps 3(b) and 3(c) apply only to the pain subscale. We use asymptotic $p$-values, consistent with the rest of the analysis. The initial screen identifies only one DIF relationship in this subscale, so the elimination procedures return that relationship and terminate.
 \begin{table}[H]
     \centering
     \begin{tabular}{c c c c c c c c c}
@@ -60,17 +62,17 @@ As the initial screening of DIF for the disability sub-scale did not disclose an
           $P1$   &  over60 &     $-0.430$      &      Score & $0.0009$ &  $-0.430$   &  Score  &  $0.0009$& DIF\\
           \hline
     \end{tabular}
-    \caption{Test for genuine DIF. With $\mathcal{C}_i$ denoting the conditioning set of variables for the relevant partial $\gamma_i$.}
+    \caption{Test for genuine DIF. Here, $\mathcal{C}_i$ denotes the conditioning set for the corresponding partial gamma coefficient.}
     \label{tab:step_3bc_ex}
 \end{table}
 
 \subsection{Step 4}
-For the disability sub-scale, both exogenous covariates support criterion validity as none of the two are independent of the score given the other. For the pain sub-scale, it's a different story, none of the two support criterion validity. 
+For the disability subscale, both covariates remain significantly associated with the score after conditioning on the other and are classified as supporting criterion validity. Neither covariate meets this criterion for the pain subscale.
 \begin{table}[H]
     \centering
     \begin{tabular}{c|c c c c c}
     \hline 
-         Subscale  & covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.P.C. \\
+         Subscale  & covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.C.V. \\
          \hline
          Disability &  gender &  $0.248$ &  $0.0007$               &   over60 &    TRUE \\
         & over60 & $0.190$  & $0.027$ & gender & TRUE \\
@@ -79,13 +81,13 @@ For the disability sub-scale, both exogenous covariates support criterion validi
         &  over60 & $0.029$ & $ 0.860$ & gender&  FALSE \\
         \hline
     \end{tabular}
-    \caption{Again $\mathcal{C}$ is the conditioning set and S.P.C. is an abbreviation for ``supports criterion validity''.}
+    \caption{$\mathcal{C}$ is the conditioning set; S.C.V.\ abbreviates ``supports criterion validity''.}
     \label{tab:placeholder}
 \end{table}
 
 
 \subsection{Step 5}
-We are now ready to construct the graph for the two sub-scales.
+We construct the graphs for the two subscales from the retained screening results.
 \begin{figure}[ht]
 \centering
 
@@ -198,7 +200,7 @@ D7/D8}
 \end{minipage}
 
 \caption{
-Disability sub-scale graphs. (a) Shows the IRT graph and (b) the corresponding moralized graph.}\label{fig-disabilitygraph}
+Disability subscale graphs: (a) IRT graph; (b) corresponding moralized graph.}\label{fig-disabilitygraph}
 \end{figure}
 
 
@@ -297,13 +299,12 @@ P4/P5}
 \end{minipage}
 
 \caption{
-Pain sub-scale graphs. (a) Shows the IRT graph and (b) the corresponding moralized graph.
+Pain subscale graphs: (a) IRT graph; (b) corresponding moralized graph.
 }\label{fig-paingraph}
 \end{figure}
 
 
 \subsection{Step 6}
-In this step we want to retest the DIF and LD edges but conditioned on greater sets. However, due to the structure of LD and DIF in the two sub-scales, these tests are redundant and we may conclude the final graphs to be the same as those reported in Step 5, see Figures \ref{fig-disabilitygraph} and \ref{fig-paingraph}. 
-
+Step 6 retests the retained DIF and LD edges using the conditioning sets implied by the graphs. For these two subscales, the LD and DIF structures make the additional tests redundant. The final graphs are therefore those reported in Step 5 (Figures~\ref{fig-disabilitygraph} and~\ref{fig-paingraph}).
 
 

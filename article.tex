@@ -106,7 +106,7 @@
 
 \usepackage[hidelinks]{hyperref}
 
-\title{Item screening in graphical Rasch models. A tutorial}
+\title{Item screening in graphical Rasch models: a tutorial}
 \author{Sebastian Kvist, Karl Bang Christensen \& Andreas Kryger Jensen}
 \affil{Section of Biostatistics, Department of Public Health, University of Copenhagen}
 \date{\today}
@@ -116,30 +116,31 @@
 \maketitle
 
 \begin{abstract}
-Rasch models are widely used to analyze questionnaire and test data. Inference based on the standard Rasch model is only valid when the data meet assumptions such as local independence and absence of differential item functioning. Graphical Rasch models provide a framework where local dependence and differential item functioning can be represented explicitly. In this context, "item screening" denotes a coherent workflow for testing for consistency, local dependence, differential item functioning, score-covariate associations, and graph-based model checking. This is done while taking spurious evidence into account. We present a non-technical introduction to the screening procedure and describe an implementation in R.
+Rasch models are widely used to analyze questionnaire and test data. Inference based on the standard Rasch model requires assumptions such as local independence and the absence of differential item functioning. Graphical Rasch models provide a framework in which these departures can be represented explicitly. In this context, ``item screening'' denotes a coherent workflow that checks consistency, screens for local dependence and differential item functioning, assesses score--covariate associations, and checks the resulting graph. The procedure also seeks to eliminate spurious evidence. We present an accessible tutorial on the screening procedure and describe its implementation in the R package \texttt{twigg}.
 \end{abstract}
 
 \section{Introduction}
 
-Questionnaires and tests are widely used to measure health, abilities, and experiences. This makes it essential to ensure that they produce reliable, meaningful, and fair results. This can be done by evaluating whether observed data meet the requirements of the Rasch \citeyearpar{rasch-1960} model. A model that satisfies all formal psychometric criteria of the Rasch model can be considered the gold standard of measurement ensuring validity and objectivity.
+Questionnaires and tests are widely used to measure health, abilities, and experiences. Their usefulness depends on whether they produce reliable, meaningful, and fair measurements. Evaluating whether the observed data meet the requirements of the Rasch \citeyearpar{rasch-1960} model provides a framework for assessing these measurement properties. The model provides a benchmark for objective measurement, while the validity of an instrument also requires consideration of its content and intended use.
 
-Among these are the assumptions that there is no local dependence \cite[LD]{lazarsfeld-henry-1968} and that there is no differential item functioning \cite[DIF]{holland-wainer-2012}.
+Two central requirements are local independence, or the absence of local dependence (LD) \citep{lazarsfeld-henry-1968}, and the absence of differential item functioning (DIF) \citep{holland-wainer-2012}.
 
-Briefly, local independence means that items are only correlated through the latent trait that the instrument measures \cite{lord-novick-1968} and DIF that respondents from different groups who have the same level of the latent variable have different response distributions on an item.
+Local independence means that item responses are independent conditional on the latent trait measured by the instrument \citep{lord-novick-1968}. DIF means that respondents from different groups who have the same level of the latent trait have different response distributions for an item.
 
-Graphical Rasch models \cite{kreiner-christensen-2002,kreiner-christensen-2004,kreiner-christensen-2007} provide a framework for including item dependencies and differential item functioning. This class of models does not satisfy all measurement requirements, but offers a realistic and practically useful representation of empirical data \cite{kreiner-2007}. 
+Graphical Rasch models \citep{kreiner-christensen-2002,kreiner-christensen-2004,kreiner-christensen-2007} provide a framework for including item dependencies and differential item functioning. This class of models does not satisfy all measurement requirements, but offers a realistic and practically useful representation of empirical data \citep{kreiner-2007}.
 
-Identifying explicit violations of the Rasch model requirements based on empirical data is essential. Each item pair can be tested for LD using several available methods \cite[pp. 179-80]{christensen-et-al-2017}. Similarly, several statistical tests exist that can evaluate of DIF for each combination of an item and a covariate \cite{zumbo-1999}.
+Identifying violations of the Rasch model requirements is an essential part of evaluating an instrument. Several methods are available for testing LD between item pairs \citep[pp. 179-80]{christensen-et-al-2017}. Similarly, DIF can be assessed for each combination of an item and a covariate \citep{zumbo-1999}.
 
-In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2012} discuss two testing approaches: conditional likelihood ratio tests \citep{kelderman-1984} and a simple non-parametric test that does not require specialized Rasch software \cite[pp. 1250-1]{kreiner-christensen-2004}. These approaches also apply to tests of DIF.
+In the context of LD, Kreiner and Christensen \citeyearpar{kreiner-christensen-2012} discuss two testing approaches: conditional likelihood ratio tests \citep{kelderman-1984} and a simple nonparametric test that does not require specialized Rasch software \citep[pp. 1250-1]{kreiner-christensen-2004}. These approaches also apply to tests of DIF.
 
-The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \cite{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure. 
+The latter of these approaches is the basis of a stepwise screening procedure for simultaneously evaluating LD and DIF \citep{kreiner-christensen-2011}. This procedure involves checks of consistency, tests of LD, tests of DIF, elimination of spurious evidence, and graph-based checks of the resulting model structure.
 
 \subsection{Models for measurement}\label{sec:models_measurement}
 
 Let $\Theta$ denote the latent trait that the instrument intends to measure. The Rasch model describes the relationship between this trait and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. Let $\boldsymbol{X}=(X_i)_{i=1,\ldots,m}$ denote a set of covariates. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. 
 
-The Rasch model imposes the following requirements: (i) $\theta$ is uni-dimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$; (iii) Absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
+\coauthortodo{\textbf{Item notation.} Please check the $X$ item-pair indices against the $Y$ notation. Should the IRF below be $E(Y_i\mid\theta)$ or $P(Y_i=1\mid\theta)$?}%
+The Rasch model imposes the following requirements: (i) $\theta$ is unidimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$; (iii) absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
 $$
 P(Y_i=y|\theta)=\frac{\exp(y(\theta+\alpha_{i}))}{1+\exp(\theta+\alpha_{i})}
 $$
@@ -147,9 +148,9 @@ The last requirement ensures that the item response function (IRF) $\theta\mapst
 
 \subsubsection{Notation}
 
-For each participant total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-scores as $R_i=S-Y_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we define sub-scores $S_B=\sum_{Y_i\in B}Y_i$.
+For each participant, total scores are computed as $S=\sum_{i=1}^k Y_i$ and rest-scores as $R_i=S-Y_i$. Furthermore, for any subset of items $B\subset\{Y_1,\dots,Y_k\}$ we define subscores $S_B=\sum_{Y_i\in B}Y_i$.
 
-\subsubsection{The graphical Rasch Model}
+\subsubsection{The graphical Rasch model}
 
 Combining the requirements (ii)-(iv) we can write the Rasch model in vector form
 \begin{align}
@@ -159,9 +160,10 @@ where
 $$
 \alpha_0=-\log\left(\prod_{i=1}^k\left(1+\exp(\theta+\alpha_i)\right)\right)
 $$
-is a normalizing constant that does not depended on the observed data $(\boldsymbol{y},\boldsymbol{x})$. It is a consequence of (\ref{eq:sufficient}) that $S$ is sufficient for $\theta$. This is feature that makes the Rasch model stand out from other models for measurement. Explicitly, this means that under the Rasch model, the total score $S$, contains all information in the response patterns, that is relevant for estimating $\theta$. However, it is important to specify that $S$ and $\theta$ are not identical objects, but $S$ is an observed statistic, which holds the necessary information about the unobserved parameter $\theta$, under the Rasch model.
+is a normalizing constant that does not depend on the observed data $(\boldsymbol{y},\boldsymbol{x})$. Equation~\eqref{eq:sufficient} shows that the total score $S$ is sufficient for $\theta$: it contains all the information about $\theta$ available in the response pattern. Here, $S$ is an observed statistic, whereas $\theta$ is the latent-trait parameter.
 
 \subsubsection{Adding LD and DIF}
+\coauthortodo{\textbf{Parameters.} Are $\lambda_{ij}$ and $\delta_{il}$ interaction coefficients rather than binary indicators? Please clarify the description below.}%
 
 The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this model is easily extended to include (i) interaction terms between item pairs (to model LD) and (ii) interaction terms between item and exogenous variable pairs (to model DIF). This leads to the following form for the graphical Rasch model for dichotomous items
 
@@ -173,14 +175,15 @@ where
 \begin{align}
 (\star)=\sum_{i=1}^{k}\sum_{j>i}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}\delta_{il}y_ix_l
 \end{align}
-with $\lambda_{ij}$ is an indicator of LD for the item pair $(i,j)$ and with $\delta_{il}$ is an indicator of DIF for the item $Y_i$ with respect to covariate $X_l$. It is seen from (\ref{eq:also-sufficient}) that $S$ is also sufficient for $\theta$ in this more general model.
+where $\lambda_{ij}$ is an indicator of LD for item pair $(i,j)$ and $\delta_{il}$ is an indicator of DIF for item $Y_i$ with respect to covariate $X_l$. Equation~\eqref{eq:also-sufficient} shows that $S$ is also sufficient for $\theta$ in this more general model.
 
-\subsubsection{Representation as graph}
+\subsubsection{Representation as a graph}
 
 The model can be represented as a graph where items and covariates are represented as nodes. Edges between item nodes represent LD, while edges between item and exogenous variable nodes represent DIF. 
 
 \begin{mybox3}
 \begin{example}
+\coauthortodo{\textbf{Example indices.} Should the LD pairs be $(Y_1,Y_2)$ and $(Y_1,Y_4)$? Also check $x_l$ in the DIF term below against the stated $X_1$ effect.}%
 For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(X_1,X_2)$ and $(X_1,X_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
 
 \begin{center}
@@ -227,11 +230,11 @@ where
 
 \section{Methods}\label{sec:it_sec}
 
-This section describes the item screening procedure. Assume that $V(\Theta)>0$ and make three choices: (i) an association measure and a partial association measure; (ii) a way to calculate $p$-values; (iii) a way to adjust for multiple testing.
+This section describes the six-step item screening procedure. We assume that $V(\Theta)>0$. The analysis requires an association measure, a corresponding partial association measure, a method for calculating $p$-values, and a procedure for adjusting for multiple testing.
 
-Re (i): Analyses below use $\gamma$ \cite{goodman-kruskal-1954} and partial $\gamma$ \cite{davis-1967}. Details about how to compute these are in Appendix \ref{sec:App-gamma}. Re (ii): Analyses below use asymptotic $p$-values, but Monte Carlo $p$-values \cite{north-2002} may be a better choice. Re (iii): Analyses below uses the method suggested by Benjamini and Hochberg \citeyearpar{benjamini-hochberg-1995}, but other methods can also be used. Details about how to compute these are in Appendix \ref{sec:App-multiple-testing}.
+We use Goodman and Kruskal's $\gamma$ \citeyearpar{goodman-kruskal-1954} and partial $\gamma$ \citep{davis-1967}, as described in Appendix~\ref{sec:App-gamma}. The analyses use asymptotic $p$-values; Monte Carlo methods are an alternative \citep{north-2002}. We adjust for multiple testing using the Benjamini--Hochberg procedure \citeyearpar{benjamini-hochberg-1995}, described in Appendix~\ref{sec:App-multiple-testing}.
 
-\subsection{Analysis of consistency} 
+\subsection{Step 1: Analysis of consistency}
 
 \subsubsection{M1} 
 
@@ -239,13 +242,13 @@ Test that there is a positive correlation between any pair of items.
 
 \subsubsection{M2} 
 
-Test that any item $Y_a$ is positively related to its corresponding rest-score $R_a$, and all sub-scores $S_B$, where $Y_a\not\in B$.
+Test that any item $Y_a$ is positively related to its corresponding rest-score $R_a$, and all subscores $S_B$, where $Y_a\not\in B$.
 
 \subsubsection{M3} 
 
-Test that any exogenous variable $X_l$ that is positively related to $\Theta$ is also positively related to the total score $S$, to all sub-scores, $S_A$, and to all item responses $Y_i$. 
+Test that any exogenous variable $X_l$ that is positively related to $\Theta$ is also positively related to the total score $S$, to all subscores, $S_A$, and to all item responses $Y_i$.
 
-\subsection{Analysis of LD and DIF}\label{sec:ld-dif}
+\subsection{Step 2: Analysis of LD and DIF}\label{sec:ld-dif}
 
 Use partial association coefficients to flag all item pairs exhibiting LD and all pairs of an item and a covariate that exhibit DIF. Test hypotheses of the form
 
@@ -255,11 +258,12 @@ Use partial association coefficients to flag all item pairs exhibiting LD and al
 
 rejecting when the corresponding $p$-value is below $0.05$ after controlling for multiple testing.
 
-\subsection{Elimination of spurious evidence }
+\subsection{Step 3: Elimination of spurious evidence}
 
-This third step filters out spurious evidence for LD and DIF. This is done in the steps (a), (b) and (c) outlined below.
+Step 3 filters out spurious evidence of LD and DIF through Steps 3(a), 3(b), and 3(c), described below.
 
-\paragraph{(a) Elimination of spurious evidence of LD.} From the initial LD screening in step 2, we look at all flagged evidence of LD and create four lists:
+\paragraph{Step 3(a): Elimination of spurious evidence of LD.} From the initial LD screening in Step 2, we look at all flagged evidence of LD and create four lists:
+\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.}%
 
 \begin{enumerate}
 \item[(i)] item pairs with two significant positive partial $\gamma$ coefficients.
@@ -269,16 +273,16 @@ This third step filters out spurious evidence for LD and DIF. This is done in th
 \item[(v)] item pairs with no significant partial $\gamma$ coefficients. 
 \end{enumerate}
 
-For each pair, compute the weighted partial $\gamma$. Use stepwise inclusion for all the item pairs flagged for LD, prioritizing pairs with two significant coefficients. First, include the strongest evidence of LD at face value. Next, disregard all other tests as spurious if one of the two flagged items defines the conditional rest-score. Move pairs down on the list (i)-(v) above if this happens. Repeat until no flagged pairs remain.
+For each pair, compute the weighted partial $\gamma$. Apply stepwise inclusion to the pairs flagged for LD, prioritizing pairs with two significant directional tests over those with only one. Within each priority group, select the pair with the largest absolute weighted partial $\gamma$ and retain it as genuine LD. Remove from further consideration all directional tests whose conditioning rest-score is defined by either item in the selected pair. Update the evidence lists (i)--(v) accordingly and repeat until no flagged pairs remain.
 
 
-\paragraph{(b) Elimination of spurious evidence for items with more than one
-DIF source.} Implemented as Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}; no source is removed from the candidate list until all tests in the current iteration have been performed. Significance is assessed via the asymptotic $p$-value of the partial gamma test (Algorithm \ref{alg:part_gam} in Appendix~\ref{sec:AppAlgorithms}).
+\paragraph{Step 3(b): Elimination of spurious evidence for items with more than one
+DIF source.} This procedure is implemented as Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}; no source is removed from the candidate list until all tests in the current iteration have been performed. Significance is assessed via the asymptotic $p$-value of the partial gamma test (Algorithm \ref{alg:part_gam} in Appendix~\ref{sec:AppAlgorithms}).
 
-\paragraph{(c) Elimination of spurious evidence for sources with an apparent
-DIF effect on more than one item} applies the same elimination procedure as (b), but to the $DIF(X_i)$ lists rather than the $SOURCE(Y_i)$ lists, eliminating items exhibiting spurious DIF with respect to each exogenous variable; see Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}.
+\paragraph{Step 3(c): Elimination of spurious evidence for sources with an apparent
+DIF effect on more than one item.} This step applies the same elimination procedure as Step 3(b), but to the $DIF(X_i)$ lists rather than the $SOURCE(Y_i)$ lists, eliminating items exhibiting spurious DIF with respect to each exogenous variable; see Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}.
 
-\paragraph{Combining (b) and (c).} The order of (b) and (c) does not matter, since no final decision is made until both have run. Each item-covariate pair then carries two $p$-values, one from each step, and DIF is accepted as genuine only if both are significant.
+\paragraph{Combining Steps 3(b) and 3(c).} The two procedures run separately, and no final decision is made until both are complete. Their order therefore does not affect the combined decision. Each item--covariate pair carries two $p$-values, one from each step, and DIF is accepted as genuine only if both are significant.
 
 \begin{mybox3}
 \begin{example}
@@ -370,7 +374,7 @@ pair is retained as genuine DIF only if it survives both procedures.
 \centering
 \begin{tabular}{c c c c c}
 \hline
-Item & Covariate & Survives Step 3.b & Survives Step 3.c & Conclusion \\
+Item & Covariate & Survives Step 3(b) & Survives Step 3(c) & Conclusion \\
 \hline
 $A$ & $X$ & Yes & Yes & Genuine DIF \\
 $A$ & $Z$ & No & No & Spurious \\
@@ -400,21 +404,20 @@ DIF(X)=\{A\}, \qquad DIF(Z)=\{E\}.
 \end{mybox3}
 
 
-\subsection{Association between the score and exogenous covariates}
-We examine the structural association between the total score and exogenous variables via backwards elimination: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates. This is outlined in Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}.
+\subsection{Step 4: Score--covariate associations}
+We examine the structural association between the total score and exogenous variables via backward elimination: an exogenous covariate is retained as a structural predictor of the score if it remains conditionally associated with the score given the other retained covariates. This is outlined in Algorithm \ref{alg:step4} in Appendix~\ref{sec:AppAlgorithms}.
 
-Retained covariates are treated as evidence of criterion validity and included in the initial GLLRM; dropped covariates are judged to add no significant information about the score once the other candidates are controlled for, and are excluded.
+Retained covariates are treated as evidence of criterion validity and included in the initial graphical log-linear Rasch model (GLLRM); dropped covariates are judged to add no significant information about the score once the other candidates are controlled for, and are excluded.
 
-\subsection{Graphical Rasch model and analysis of global Markov properties
-of $G_{\mathrm{Rasch}}$}
+\subsection{Step 5: Graph construction}
 
-We now construct the initial GLLRM by collecting the outputs of Steps 3 and 4 into the corresponding graph, IRT graph, and moralized marginal graph.
+We now construct the initial GLLRM by collecting the outputs of Steps 3 and 4 into the corresponding graph, item response theory (IRT) graph, and moralized marginal graph.
 
 \paragraph{\textit{Step 5 in practice}}
-No new tests are performed; we simply report the structure implied by the genuine LD and DIF edges and the exogenous variables satisfying criterion validity. The GLLRM graph records which nodes are present and connected beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. The moralized marginal graph is obtained by marrying parents, replacing the latent trait with a score node, and adding undirected score-to-item and item-to-item edges.
+No new tests are performed in Step 5. We report the structure implied by the retained LD and DIF edges and the covariates satisfying criterion validity. The GLLRM graph records the nodes and the connections beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. To construct the moralized marginal graph, we connect nodes that are parents of the same node, a process known as ``marrying parents''. We then replace the latent trait with a score node and add undirected score-to-item and item-to-item edges.
 
 
-\subsection{Tests of global Markov properties of the GLLRM}
+\subsection{Step 6: Tests of global Markov properties}
 Before reporting an initial model, we retest the DIF and LD relations retained from Step 5 against the full structure, to check they are not artifacts of the simpler conditioning sets used earlier. For DIF, this is the test
 \begin{align}
     H_0^{C5}: Y_i \perp X_j
@@ -422,7 +425,7 @@ Before reporting an initial model, we retest the DIF and LD relations retained f
     S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
     \operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
 \end{align}
-For each genuine LD pair $(Y_a,Y_b)$, we cut the edge between them, condition each item on the sub-score complementary to its remaining LD connections together with its DIF sources, and test both directions ($C7$ and $C9$; \cite{kreiner-christensen-2011}). The edge is retained if at least one direction is significant.
+For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identify the remaining LD component containing each item. For each component, we form a subscore from the items outside it and identify the DIF sources associated with its member items. We then test the item pair in both directions, conditioning on the corresponding complementary subscore and DIF sources ($C7$ and $C9$; \citealp{kreiner-christensen-2011}). The edge is retained if at least one direction is significant.
 
 \begin{mybox3}
     \begin{example}
@@ -481,13 +484,12 @@ For each genuine LD pair $(Y_a,Y_b)$, we cut the edge between them, condition ea
 {\small Temporarily testing LD edge $(A,B)$.};
 \end{tikzpicture}
 \end{center}
-We clearly see from the graph above, that the LD connections still available are
+\coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.}%
+The graph shows that the remaining LD components are
         \begin{equation}
             C_A=\{A,D,C\},\qquad C_B=\{B\}.
         \end{equation}
-        The tests we now perform are of conditional independence between the two items given the sub-scores defined by the complement set of items making up $C_A$ and $C_B$, grouped with 
-        %of the LD connections available from the two items after cutting their shared edge and 
-        DIF sources relative to items defining the sub-scores. 
+        The complements of $C_A$ and $C_B$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_A^c}$ and $S_{C_B^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X$ for $C_A$, and $X$ and $Z$ for $C_B$. The two hypotheses are
         \begin{align*}
             C7:\ A\bot B\mid S_{C_A^c},DIF(C_A) \quad = \quad A\bot B\mid S_{C_A^c},X,
         \end{align*}
@@ -557,13 +559,13 @@ We clearly see from the graph above, that the LD connections still available are
 
 \section{Results}
 
-We apply the item screening procedure to data set with $99$ respondents who completed the $10$-item AKQoL questionnaire ($Q1$--$Q10$, each scored $0$--$3$). Two exogenous covariates, sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years) were also recorded all $99$ cases are complete with no missing values.
+We apply the screening procedure to data from $99$ respondents who completed the $10$-item Actinic Keratosis Quality of Life (AKQoL) questionnaire ($Q1$--$Q10$, each scored $0$--$3$). Two covariates were also recorded: sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ respondents have complete item and covariate data.
 
 \subsection{Step 1}
-M2 passes: every item is positively related to its rest-score, the weakest being $Q9$ ($\gamma=0.078$). M1 and M3 both flag $Q9$. M1 fails because the pairwise item association $(Q5,Q9)$ is negative ($\gamma=-0.168$); all other $\binom{10}{2}-1$ pairs are non-negative. M3 fails overall, but passes per covariate for \texttt{Alder} (consistently negative direction with the score and all items, score $\gamma=-0.164$) and fails only for \texttt{woman}, whose association with $Q9$ ($\gamma=-0.121$) has the opposite sign to its association with the score ($\gamma=0.338$); all other items agree in sign with the score. As the inconsistency in each check is isolated to item $Q9$, we proceed to Step 2.
+All items pass M2: each is positively associated with its rest-score, with the smallest association observed for $Q9$ ($\gamma=0.078$). Both M1 and M3 flag $Q9$. M1 fails because the association between $Q5$ and $Q9$ is negative ($\gamma=-0.168$); all other $\binom{10}{2}-1$ item pairs have non-negative associations. For M3, age passes because its associations with the score and all items are consistently negative (score $\gamma=-0.164$). Sex fails because its association with $Q9$ ($\gamma=-0.121$) has the opposite sign to its association with the score ($\gamma=0.338$). Its associations with all other items have the same sign as its association with the score. Because the inconsistencies in M1 and M3 are confined to $Q9$, we proceed to Step 2.
 
 \subsection{Step 2}
-Controlling for the FDR with Benjamin--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
+Controlling the false discovery rate (FDR) with Benjamini--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llcccc@{}}
@@ -595,7 +597,7 @@ $Q3$  & $Q10$ & $-0.755$ & $<0.0001$ & $<0.0001$ & *** \\
 
 \subsection{Step 3}
 \subsubsection{Step 3(a)}
-The stepwise inclusion algorithm accepts $(Q3,Q10)$ (weighted partial $\gamma=-0.694$) and $(Q5,Q6)$ (weighted partial $\gamma=0.494$) as genuine LD. The remaining candidates, $(Q3,Q9)$ and $(Q6,Q9)$, are disregarded as spurious once $Q3$ and $Q6$ are used to define the rest-scores for the accepted pairs -- consistent with $Q9$'s already anomalous behaviour in Step 1.
+The stepwise inclusion algorithm accepts $(Q3,Q10)$ (weighted partial $\gamma=-0.694$) and $(Q5,Q6)$ (weighted partial $\gamma=0.494$) as genuine LD. The remaining candidates, $(Q3,Q9)$ and $(Q6,Q9)$, are disregarded as spurious once $Q3$ and $Q6$ are used to define the rest-scores for the accepted pairs -- consistent with $Q9$'s already anomalous behavior in Step 1.
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llc@{}}
@@ -610,8 +612,8 @@ $Q5$ & $Q6$  & $0.494$ \\
 \label{tab:ak_step3a}
 \end{table}
 
-\subsubsection{Step 3(b) and 3(c)}
-Each flagged item has exactly one candidate DIF source and each source only one candidate item, so the elimination algorithms of Step 3(b)/(c) have nothing to condition away: both relations from Step 2 pass through unchanged and are carried forward as candidate genuine DIF.
+\subsubsection{Steps 3(b) and 3(c)}
+Each flagged item has exactly one candidate DIF source and each source only one candidate item, so the elimination algorithms of Steps 3(b) and 3(c) have nothing to condition away: both relations from Step 2 pass through unchanged and are carried forward as candidate genuine DIF.
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llccc@{}}
@@ -622,7 +624,7 @@ $Q4$ & Alder & $0.383$ & $0.0031$ & DIF \\
 $Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
 \bottomrule
 \end{tabular}
-\caption{Result of combining Step 3(b) and 3(c) (asymptotic $p$-values, both conditioning sets are $S$).}
+\caption{Result of combining Steps 3(b) and 3(c) (asymptotic $p$-values, both conditioning sets are $S$).}
 \label{tab:ak_step3bc}
 \end{table}
 
@@ -696,16 +698,17 @@ The DIF edge Alder$\,\to Q4$ fails its $C5$ test ($p=0.051$) and is removed, alo
 
 
 \section{Discussion}
-The M2 and M3 checks are implemented as screening procedures measuring the associations between items and their corresponding rest-scores, and exogenous covariates and the total score respectively. This means we are not performing the exhaustive test of checking items and exogenous covariates against all possible sub-scores. This keeps the procedure computational feasible, as the number of unique sub-scores, for $k$ items, not including the item in question and the $0$ sub-score is $2^{k-1}$, which grows exponentially with the number of items. 
+\coauthortodo{\textbf{Subscore count.} Excluding the empty subset would give $2^{k-1}-1$. Please check the count in this paragraph.}%
+The implementation of M2 checks associations between items and their corresponding rest-scores. M3 examines associations between covariates and the total score and checks their direction against the item--covariate associations. These screening checks do not exhaustively evaluate all possible subscores. This keeps the procedure computationally feasible because the number of candidate subscores grows exponentially with the number of items. For $k$ items, the number of subscores excluding the item under examination and the zero subscore is $2^{k-1}$.
 
-The stepwise inclusion algorithm, identifying genuine LD in step 3a, groups pairs with two significant LD tests and weigh them equally but prioritize them over item pairs only exhibiting one significant LD test, which are also grouped. In both groups the strongest evidence of genuine LD is determined by the absolute value of the weighted partial gamma coefficient of the two tests. This means that both positive and negative association LD can be prioritized as the strongest signal. The idea is that an item pair with two significant tests must have a stronger LD signal than item pairs with only one significant test. While allowing item pairs to drop from the set of two significant tests into the set with only one. The use of weighted partial gammas allow us to compare the LD pairs equally and also ensures the contribution of a test to the decision statistic is influenced proportionally to the number of comparable pairs defining the partial gamma, thus keeping as much information in the decision statistic as possible. Opposed to comparing pairs based on their naive arithmetic mean. 
+In Step 3(a), the inclusion algorithm prioritizes pairs with two significant directional LD tests over pairs with only one. Within each group, pairs are ranked by the absolute value of the weighted partial gamma coefficient, allowing both positive and negative associations to be selected. This ordering defines the algorithm's screening priorities. As directional tests are removed from consideration, a pair can move from the group with two significant tests to the group with one. The weighted coefficient accounts for the number of comparable pairs contributing to each directional estimate, rather than assigning equal weight to both estimates through an arithmetic mean.
 
-A negative partial gamma association between two items means that scoring high on one of the two will lead you to scoring low on the other. When does this makes sense? In a setting where two questions test different methods. But then we are no longer modeling a unidimensional latent trait, but a multi dimensional one \cite{kreiner-christensen-2004}, and it should be well considered if the questionnaire should be handled as a whole or split into sub questionnaires.  
+A negative partial gamma indicates that higher scores on one item tend to be associated with lower scores on the other, conditional on the variables used in the test. One possible explanation is that the items assess different methods or dimensions \citep{kreiner-christensen-2004}. Such a pattern warrants consideration of whether the questionnaire should be analyzed as a single scale or as separate subscales.
 
 
-For DIF, one of the two important decisions made, is that 3b and 3c are complementary steps and not individual, meaning no decisions are made until both have been performed and compared. We only retain a DIF edge if it survives both steps, which is a rather conservative choice. However, the general overall procedure is to start with a large set of LD and DIF (step 2) and then proceed to narrow the sets down as we get deeper into the screening. As all LD and DIF edges are tested again in later steps. The advantage being that we are less likely to include spurious DIF edges, but at the cost of potentially removing weaker but genuine DIF relations. The second important of the two decisions made in the DIF framework is how we estimate $p$-values. We rely throughout on asymptotic $p$-values, which are fast, almost instantaneous to compute, but may be less reliable in large sparse contingency tables where strata become thin.
+Two decisions are central to DIF screening. First, Steps 3(b) and 3(c) are complementary: a final decision is made only after both procedures have been completed and their results compared. A DIF edge is retained only if it survives both steps. This conservative rule reduces the risk of retaining spurious DIF, at the cost of potentially removing weaker genuine relationships. The procedure starts with a broad set of candidate LD and DIF relations in Step 2 and progressively reduces that set, with retained edges tested again in Step 6. Second, the calculation of $p$-values requires a choice of method. We use asymptotic $p$-values throughout. These are fast to compute but may be less reliable when contingency tables are sparse and the conditioning strata contain few observations.
 
-Finally, the graph-building and graph-checking steps, i.e. 5 and 6, does not draw the graphs explicitly, this is something we have, as of now, left to the user. They do however report the nodes, where edges should be present, which type they are and if they should be directed. Step 5 reports this information based on the retained LD, DIF, and score-covariate evidence. It should be stressed, the graph structure reported, is to be understood as an evidence graph which is the result of the previous steps and not as the final model. Step 6 then retests the retained edges using conditioning sets implied by the graph. Meaning that right now step 6 acts as a confirmation of the posed graph from step 5. 
+Steps 5 and 6 report graph structures without drawing them. They return the nodes, edges, edge types, and directions, leaving visualization to the user. Step 5 constructs an evidence graph from the retained LD, DIF, and score--covariate associations. This graph summarizes the screening results and should not be interpreted as a fully validated model. Step 6 retests the retained edges using the conditioning sets implied by the graph.
 
 \newpage
 \bibliography{reference}
