@@ -2,5 +2,6 @@
 Step 2 involves multiple hypothesis tests (Section~\ref{sec:ld-dif}). We account for multiple testing by controlling the false discovery rate (FDR).
 
 \subsubsection{The Benjamini--Hochberg Procedure}
-\coauthortodo{\textbf{Ordered p-values.} Please check whether the ordering should use $\leq$ to allow ties.}%
-We use the Benjamini--Hochberg procedure to control the FDR \citep{benjamini-hochberg-1995}. For $T$ tests, rank the raw $p$-values in ascending order, $p_1<p_2<\dots <p_T$. At the chosen FDR level $\alpha$, find the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and reject the null hypotheses corresponding to $p_i$, $i=1,\dots,t$. If no $p$-value meets this condition, no null hypotheses are rejected. The same decisions can be obtained by comparing the Benjamini--Hochberg-adjusted $p$-values with $\alpha$.
+\coauthortodo{\textbf{Ordered p-values.} Please check whether the ordering should use $\leq$ to allow ties.\\
+\textcolor{blue}{Cange accepted and implemented by STK. tiwgg uses "stats::p.adjust(..., method = "BH")" which handles ties trhough R's standard implementation, thus allowing for ties. So the inequalities should be weak and not hard.}}%
+We use the Benjamini--Hochberg procedure to control the FDR \citep{benjamini-hochberg-1995}. For $T$ tests, rank the raw $p$-values in ascending order, $p_1\leq p_2\leq \dots \leq p_T$. At the chosen FDR level $\alpha$, find the largest $t$ such that $p_t\leq \frac{t}{T}\alpha$ and reject the null hypotheses corresponding to $p_i$, $i=1,\dots,t$. If no $p$-value meets this condition, no null hypotheses are rejected. The same decisions can be obtained by comparing the Benjamini--Hochberg-adjusted $p$-values with $\alpha$.

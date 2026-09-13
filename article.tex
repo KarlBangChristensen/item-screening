@@ -139,12 +139,13 @@ The latter of these approaches is the basis of a stepwise screening procedure fo
 
 Let $\Theta$ denote the latent trait that the instrument intends to measure. The Rasch model describes the relationship between this trait and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. Let $\boldsymbol{X}=(X_i)_{i=1,\ldots,m}$ denote a set of covariates. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. 
 
-\coauthortodo{\textbf{Item notation.} Please check the $X$ item-pair indices against the $Y$ notation. Should the IRF below be $E(Y_i\mid\theta)$ or $P(Y_i=1\mid\theta)$?}%
-The Rasch model imposes the following requirements: (i) $\theta$ is unidimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(X_i,X_j)$; (iii) absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
+\coauthortodo{\textbf{Item notation.} Please check the $X$ item-pair indices against the $Y$ notation. Should the IRF below be $E(Y_i\mid\theta)$ or $P(Y_i=1\mid\theta)$?\\
+\textcolor{blue}{changes accepted and implemented, by STK, concerning the "X item-pair, and the IRF representation. Since we are working with the dichotomous model, the IRF should be an increasing function of $\theta$ when $Y_j=1.$}}%
+The Rasch model imposes the following requirements: (i) $\theta$ is unidimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(Y_i,Y_j)$; (iii) absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
 $$
 P(Y_i=y|\theta)=\frac{\exp(y(\theta+\alpha_{i}))}{1+\exp(\theta+\alpha_{i})}
 $$
-The last requirement ensures that the item response function (IRF) $\theta\mapsto E(X_j=x|\theta)$ is monotone and increasing. Interpreting $-\alpha_i$ as the item location is often useful.
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(Y_j=1|\theta)$ is monotone and increasing. Interpreting $-\alpha_i$ as the item location is often useful.
 
 \subsubsection{Notation}
 
@@ -183,8 +184,9 @@ The model can be represented as a graph where items and covariates are represent
 
 \begin{mybox3}
 \begin{example}
-\coauthortodo{\textbf{Example indices.} Should the LD pairs be $(Y_1,Y_2)$ and $(Y_1,Y_4)$? Also check $x_l$ in the DIF term below against the stated $X_1$ effect.}%
-For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(X_1,X_2)$ and $(X_1,X_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
+\coauthortodo{\textbf{Example indices.} Should the LD pairs be $(Y_1,Y_2)$ and $(Y_1,Y_4)$? Also check $x_l$ in the DIF term below against the stated $X_1$ effect. \\
+\textcolor{blue}{Changes accepted and implemented by STK.}}%
+For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(Y_1,Y_2)$ and $(Y_1,Y_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
 
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
@@ -222,7 +224,7 @@ P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alp
 \end{align}
 where
 \begin{align}
-(\star)=\lambda_{12}y_1y_2+\lambda_{14}y_1y_4 +\delta_{21}y_2x_l+\delta_{22}y_2x_2
+(\star)=\lambda_{12}y_1y_2+\lambda_{14}y_1y_4 +\delta_{21}y_2x_1+\delta_{22}y_2x_2
 \end{align}
 
 \end{example}
@@ -263,7 +265,8 @@ rejecting when the corresponding $p$-value is below $0.05$ after controlling for
 Step 3 filters out spurious evidence of LD and DIF through Steps 3(a), 3(b), and 3(c), described below.
 
 \paragraph{Step 3(a): Elimination of spurious evidence of LD.} From the initial LD screening in Step 2, we look at all flagged evidence of LD and create four lists:
-\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.}%
+\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.\\
+\textcolor{blue}{change made by STK: list "(v) item pairs with no significant partial $\gamma$ coefficients." removed, since no such list is created.}}%
 
 \begin{enumerate}
 \item[(i)] item pairs with two significant positive partial $\gamma$ coefficients.
@@ -484,31 +487,33 @@ For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identif
 {\small Temporarily testing LD edge $(A,B)$.};
 \end{tikzpicture}
 \end{center}
-\coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.}%
+\coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.\\
+\textcolor{blue}{notation fixed by STK; it should ofc be "$\text{SOURCE}(C_A)$" and "$\text{SOURCE}(C_B)$"}}%
 The graph shows that the remaining LD components are
         \begin{equation}
             C_A=\{A,D,C\},\qquad C_B=\{B\}.
         \end{equation}
         The complements of $C_A$ and $C_B$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_A^c}$ and $S_{C_B^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X$ for $C_A$, and $X$ and $Z$ for $C_B$. The two hypotheses are
         \begin{align*}
-            C7:\ A\bot B\mid S_{C_A^c},DIF(C_A) \quad = \quad A\bot B\mid S_{C_A^c},X,
+            C7:\ A\bot B\mid S_{C_A^c},\text{SOURCE}(C_A) \quad = \quad A\bot B\mid S_{C_A^c},X,
         \end{align*}
         and 
         \begin{equation*}
-            C9:\ A\bot B\mid S_{C_B^c},DIF(C_B) \quad = \quad A\bot B\mid S_{C_B^c},Z,X.
+            C9:\ A\bot B\mid S_{C_B^c},\text{SOURCE}(C_B) \quad = \quad A\bot B\mid S_{C_B^c},Z,X.
         \end{equation*}
     Doing this for all LD edges, suppose we observe the following table of tests
-    \coauthortodo{\textbf{Degenerate tests.} Removing A--B gives $S_{C_A^c}=B$; removing C--D gives $S_{C_D^c}=C$. These tests condition on a tested item, so partial $\gamma$ is undefined. Please check $p=0.016$ and $0.03$.}%
+    \coauthortodo{\textbf{Degenerate tests.} Removing A--B gives $S_{C_A^c}=B$; removing C--D gives $S_{C_D^c}=C$. These tests condition on a tested item, so partial $\gamma$ is undefined. Please check $p=0.016$ and $0.03$. \\
+    \textcolor{blue}{Changes accepted an implemented by STK, cf the reason given in mail sent 13/09}}%
     \begin{table}[H]
      \centering
     \begin{tabular}{c c c c}
             \hline
             LD pair & Hypothesis & $p$-value & Decision \\
             \hline
-            $(A,B)$ & $B \bot A \mid S_{C_A^c},X$ & $0.016$ & supported\\
+            $(A,B)$ & $B \bot A \mid S_{C_A^c},X$ & NA & not supported/undefined \\
             $(A,B)$ & $B \perp A \mid S_{C_B^c},X,Z$ & $0.510$ & not supported\\
             $(C,D)$ & $C \perp D \mid S_{C_C^c},X$ & $0.02$ & supported \\
-            $(C,D)$ & $C \perp D \mid S_{C_D^c},X,Z$ & $0.03$ & supported \\
+            $(C,D)$ & $C \perp D \mid S_{C_D^c},X,Z$ & NA & not supported/undefined \\
             $(A,D)$ & $A \perp D \mid S_{C_A^c},X,Z$ & $0.2$ & not supported \\
             $(A,D)$ & $A \perp D \mid S_{C_D^c},X$ & $0.33$ & not supported \\
             \hline  
@@ -519,8 +524,9 @@ The graph shows that the remaining LD components are
     \coauthortodo{\textbf{Step 6.} Please check the paragraph and final graph
     against the table. The stated rule and $p$-values imply keeping $(A,B)$
     and $(C,D)$, and removing $(A,D)$. The paragraph and graph reverse the
-    latter two decisions.}%
-    Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(A,B)$ and $(A,D)$ are kept, while the edge between $(C,D)$ is removed. Thus, we are left with the final Step 6 graph below.
+    latter two decisions.\\
+    \textcolor{blue}{Changes made by STK: updated graph to be in accordance with the stated rule and p-values from the hypothetical table 6}}%
+    Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(A,B)$ and $(A,D)$ should be dropped, while the edge between $(C,D)$ is kept. Thus, we are left with the final Step 6 graph below.
     \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
 \node[nodecircle] (B) {$B$};
@@ -533,8 +539,8 @@ The graph shows that the remaining LD components are
 \node[nodecircle,right=of S,yshift=-1cm] (X) {$X$};
 \node[nodecircle,right=of S,yshift=2cm] (Z) {$Z$};
 
-\draw[ld] (A)--(B);
-\draw[ld] (A)--(D);
+%\draw[ld] (A)--(B);
+\draw[ld] (C)--(D);
 
 \draw[dotted] (A)--(S);
 \draw[dotted] (B)--(S);
@@ -558,6 +564,7 @@ The graph shows that the remaining LD components are
 \end{mybox3}
 
 
+
 \section{Results}
 
 We apply the screening procedure to data from $99$ respondents who completed the $10$-item Actinic Keratosis Quality of Life (AKQoL) questionnaire ($Q1$--$Q10$, each scored $0$--$3$). Two covariates were also recorded: sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ respondents have complete item and covariate data.
@@ -567,14 +574,15 @@ All items pass M2: each is positively associated with its rest-score, with the s
 
 \subsection{Step 2}
 Controlling the false discovery rate (FDR) with Benjamini--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
-\coauthortodo{\textbf{DIF threshold.} Q4--Alder has $p_{\mathrm{adj}}=0.062>0.05$, yet is counted and carried forward as an initial DIF candidate. Please reconcile the BH adjustment family, decision threshold, and table with the stated 5\% criterion.}%
+\coauthortodo{\textbf{DIF threshold.} Q4--Alder has $p_{\mathrm{adj}}=0.062>0.05$, yet is counted and carried forward as an initial DIF candidate. Please reconcile the BH adjustment family, decision threshold, and table with the stated 5\% criterion. \\
+\textcolor{blue}{The output of twigg::screen\_DIF() contains 3 p-value columns. Raw, iarm::partgam\_DIF's adjusted p-value and "your.adjusted.p" which twigg computes itself. The one reported here "$p_{adj}$" is iarm::partgam\_DIF's adjusted p-value, which computes it without ranking the p-values. However twigg takes all the raw p-values, ranks them and then computes the adjusted p-value. So the p-value included here should probably be the "your.adjusted.p" since this is the p-value twigg uses to determine significance. - i have changed the p-values in the from the "padj.BH" values to the "your.adjusted.p" values, and the "." to a "*" for Q4-Alder}}%
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llcccc@{}}
 \toprule
 Item & Source & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
-$Q4$ & Alder & $0.383$ & $0.0031$ & $0.062$ & . \\
+$Q4$ & Alder & $0.383$ & $0.0031$ & $0.031$ & * \\
 $Q5$ & woman & $0.727$ & $0.0008$ & $0.017$ & * \\
 \bottomrule
 \end{tabular}
@@ -669,7 +677,8 @@ $Q5$ & $Q6$ & local dependence \\
 \end{table}
 
 \subsection{Step 6}
-\coauthortodo{\textbf{Repeated DIF tests.} With one item per source and one source per item, $C5$ again conditions only on $S$. Why do the same $\gamma$s now have $p=0.051,0.032$ rather than $0.0031,0.0008$? Please state any change in data, test, or adjustment.}%
+\coauthortodo{\textbf{Repeated DIF tests.} With one item per source and one source per item, $C5$ again conditions only on $S$. Why do the same $\gamma$s now have $p=0.051,0.032$ rather than $0.0031,0.0008$? Please state any change in data, test, or adjustment.\\
+\textcolor{blue}{p-values changed by STK, cf explanation in email sent 13/9. Feel free to re-run the code yourself with the updated step6\_check\_gllrm function in twigg (i have already done so and it produces the correct p-values when p\_value\_method is set to "asymptotic".}}%
 The retained DIF and LD edges are retested under the conditioning sets implied by the Step 5 graph. For DIF this is the $C5$ hypothesis of \eqref{C5}; for each LD pair the two $C7$/$C9$ hypotheses are tested, with an edge kept if at least one is significant.
 \begin{table}[H]
 \centering
@@ -677,13 +686,14 @@ The retained DIF and LD edges are retested under the conditioning sets implied b
 \toprule
 Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
 \midrule
-Alder $\to Q4$ & $C5$ & $0.383$ & $0.051$ & Removed \\
-woman $\to Q5$ & $C5$ & $0.727$ & $0.032$ & Retained \\
+Alder $\to Q4$ & $C5$ & $0.383$ & $0.0031$ & Removed \\
+woman $\to Q5$ & $C5$ & $0.727$ & $0.0008$ & Retained \\
 \bottomrule
 \end{tabular}
 \caption{Step 6 retesting of the Step 5 DIF edges (\texttt{step6\_check\_gllrm}).}
 \label{tab:ak_step6_dif}
 \end{table}
+\coauthortodo{\textbf{(STK) monte carlo p-values}. These p-values are produced via the monte carlo method since i just now implemented the opportunity to change it.. Should they be changed for consistency and reproducibility purposes?}
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}lccccl@{}}
@@ -701,8 +711,9 @@ The DIF edge Alder$\,\to Q4$ fails its $C5$ test ($p=0.051$) and is removed, alo
 
 
 \section{Discussion}
-\coauthortodo{\textbf{Subscore count.} Excluding the empty subset would give $2^{k-1}-1$. Please check the count in this paragraph.}%
-The implementation of M2 checks associations between items and their corresponding rest-scores. M3 examines associations between covariates and the total score and checks their direction against the item--covariate associations. These screening checks do not exhaustively evaluate all possible subscores. This keeps the procedure computationally feasible because the number of candidate subscores grows exponentially with the number of items. For $k$ items, the number of subscores excluding the item under examination and the zero subscore is $2^{k-1}$.
+\coauthortodo{\textbf{Subscore count.} Excluding the empty subset would give $2^{k-1}-1$. Please check the count in this paragraph.\\
+\textcolor{blue}{Change accepted and implemented by STK. Andreas' comment is correct.}}%
+The implementation of M2 checks associations between items and their corresponding rest-scores. M3 examines associations between covariates and the total score and checks their direction against the item--covariate associations. These screening checks do not exhaustively evaluate all possible subscores. This keeps the procedure computationally feasible because the number of candidate subscores grows exponentially with the number of items. For $k$ items, the number of subscores excluding the item under examination and the zero subscore is $2^{k-1}-1$.
 
 In Step 3(a), the inclusion algorithm prioritizes pairs with two significant directional LD tests over pairs with only one. Within each group, pairs are ranked by the absolute value of the weighted partial gamma coefficient, allowing both positive and negative associations to be selected. This ordering defines the algorithm's screening priorities. As directional tests are removed from consideration, a pair can move from the group with two significant tests to the group with one. The weighted coefficient accounts for the number of comparable pairs contributing to each directional estimate, rather than assigning equal weight to both estimates through an arithmetic mean.
 
