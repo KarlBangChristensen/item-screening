@@ -436,34 +436,34 @@ For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identif
 
 \begin{mybox3}
     \begin{example}
-        Assume we have a dataset with four items $A,B,C,D$ and two exogenous covariates $X,Z$. Suppose within the dataset there exists DIF between the following pairs $(B,X), (C,X), (B,Z),$ LD between $(A,B), (C,D), (A,D)$, and finally $X$ is related to the score $S$. Step 6 now retests the DIF using \eqref{C5}.
+        Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(Y_1,Y_2), (Y_3,Y_4), (Y_1,Y_4)$, and finally $X_1$ is related to the score $S$. Step 6 now retests the DIF using \eqref{C5}.
         \begin{table}[H]
         \centering
         \begin{tabular}{c c c c c}
             \hline
             Item & Candidate source & Hypothesis & $p$-value & Decision \\
             \hline
-            $B$ & $X$ & $B \perp X \mid S, C,Z$ & $0.016$ & Retain\\
-            $C$ & $X$ & $C \perp X \mid S,B$ & $0.210$ & Remove\\
-            $B$ & $Z$ & $B \perp Z \mid S,X$ & $0.04$ & Retain \\
-            \hline  
+            $Y_2$ & $X_1$ & $Y_2 \perp X_1 \mid S, Y_3,X_2$ & $0.016$ & Retain\\
+            $Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S,Y_2$ & $0.210$ & Remove\\
+            $Y_2$ & $X_2$ & $Y_2 \perp X_2 \mid S,X_1$ & $0.04$ & Retain \\
+            \hline
             \end{tabular}
             \caption{Hypothetical tests to determine if DIF edges should be retained.}
             \label{tab:step6_dif_example}
         \end{table}
-        Next we check whether the LD edges should be retained: take the pair $(A,B)$, cut their edge, and consider the LD connections still available from each item.
-        % Temporary removal of LD edge (A,B)
+        Next we check whether the LD edges should be retained: take the pair $(Y_1,Y_2)$, cut their edge, and consider the LD connections still available from each item.
+        % Temporary removal of LD edge (Y_1,Y_2)
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
-\node[nodecircle] (B) {$B$};
-\node[nodecircle,below=of B, xshift=-2cm] (A) {$A$};
-\node[nodecircle,below=of A] (D) {$D$};
-\node[nodecircle,below=of D, xshift=2cm] (C) {$C$};
+\node[nodecircle] (B) {$Y_2$};
+\node[nodecircle,below=of B, xshift=-2cm] (A) {$Y_1$};
+\node[nodecircle,below=of A] (D) {$Y_4$};
+\node[nodecircle,below=of D, xshift=2cm] (C) {$Y_3$};
 
 \node[nodecircle,right=of A, xshift=1cm,yshift=-0.5cm] (S) {$\theta$};
 
-\node[nodecircle,right=of S,yshift=-1cm] (X) {$X$};
-\node[nodecircle,right=of S,yshift=2cm] (Z) {$Z$};
+\node[nodecircle,right=of S,yshift=-1cm] (X) {$X_1$};
+\node[nodecircle,right=of S,yshift=2cm] (Z) {$X_2$};
 
 \draw[removed] (A)--node[left]{\scriptsize test} (B);
 \draw[ld] (C)--(D);
@@ -484,26 +484,26 @@ For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identif
 \draw[dif] (X)--(C);
 \draw[dif] (Z)--(B);
 
-\node[left=0.15cm of A] {\scriptsize $\{A,D,C\}$};
-\node[left=0.15cm of B] {\scriptsize $\{B\}$};
+\node[left=0.15cm of A] {\scriptsize $\{Y_1,Y_4,Y_3\}$};
+\node[left=0.15cm of B] {\scriptsize $\{Y_2\}$};
 
 \node[below=0.35cm of C,xshift=.5cm]
-{\small Temporarily testing LD edge $(A,B)$.};
+{\small Temporarily testing LD edge $(Y_1,Y_2)$.};
 \end{tikzpicture}
 \end{center}
 \coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.\\
 \textcolor{blue}{notation fixed by STK; it should ofc be "$\text{SOURCE}(C_A)$" and "$\text{SOURCE}(C_B)$"}}%
 The graph shows that the remaining LD components are
         \begin{equation}
-            C_A=\{A,D,C\},\qquad C_B=\{B\}.
+            C_{Y_1}=\{Y_1,Y_4,Y_3\},\qquad C_{Y_2}=\{Y_2\}.
         \end{equation}
-        The complements of $C_A$ and $C_B$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_A^c}$ and $S_{C_B^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X$ for $C_A$, and $X$ and $Z$ for $C_B$. The two hypotheses are
+        The complements of $C_{Y_1}$ and $C_{Y_2}$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_{Y_1}^c}$ and $S_{C_{Y_2}^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X_1$ for $C_{Y_1}$, and $X_1$ and $X_2$ for $C_{Y_2}$. The two hypotheses are
         \begin{align*}
-            C7:\ A\bot B\mid S_{C_A^c},\text{SOURCE}(C_A) \quad = \quad A\bot B\mid S_{C_A^c},X,
+            C7:\ Y_1\bot Y_2\mid S_{C_{Y_1}^c},\text{SOURCE}(C_{Y_1}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_1}^c},X_1,
         \end{align*}
-        and 
+        and
         \begin{equation*}
-            C9:\ A\bot B\mid S_{C_B^c},\text{SOURCE}(C_B) \quad = \quad A\bot B\mid S_{C_B^c},Z,X.
+            C9:\ Y_1\bot Y_2\mid S_{C_{Y_2}^c},\text{SOURCE}(C_{Y_2}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_2}^c},X_2,X_1.
         \end{equation*}
     Doing this for all LD edges, suppose we observe the following table of tests
     \coauthortodo{\textbf{Degenerate tests.} Removing A--B gives $S_{C_A^c}=B$; removing C--D gives $S_{C_D^c}=C$. These tests condition on a tested item, so partial $\gamma$ is undefined. Please check $p=0.016$ and $0.03$. \\
@@ -514,12 +514,12 @@ The graph shows that the remaining LD components are
             \hline
             LD pair & Hypothesis & $p$-value & Decision \\
             \hline
-            $(A,B)$ & $B \bot A \mid S_{C_A^c},X$ & NA & not supported/undefined \\
-            $(A,B)$ & $B \perp A \mid S_{C_B^c},X,Z$ & $0.510$ & not supported\\
-            $(C,D)$ & $C \perp D \mid S_{C_C^c},X$ & $0.02$ & supported \\
-            $(C,D)$ & $C \perp D \mid S_{C_D^c},X,Z$ & NA & not supported/undefined \\
-            $(A,D)$ & $A \perp D \mid S_{C_A^c},X,Z$ & $0.2$ & not supported \\
-            $(A,D)$ & $A \perp D \mid S_{C_D^c},X$ & $0.33$ & not supported \\
+            $(Y_1,Y_2)$ & $Y_2 \bot Y_1 \mid S_{C_{Y_1}^c},X_1$ & NA & not supported/undefined \\
+            $(Y_1,Y_2)$ & $Y_2 \perp Y_1 \mid S_{C_{Y_2}^c},X_1,X_2$ & $0.510$ & not supported\\
+            $(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_3}^c},X_1$ & $0.02$ & supported \\
+            $(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_4}^c},X_1,X_2$ & NA & not supported/undefined \\
+            $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_1}^c},X_1,X_2$ & $0.2$ & not supported \\
+            $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_4}^c},X_1$ & $0.33$ & not supported \\
             \hline  
             \end{tabular}
             \caption{Hypothetical tests to determine if LD edges should be retained.}
@@ -530,18 +530,18 @@ The graph shows that the remaining LD components are
     and $(C,D)$, and removing $(A,D)$. The paragraph and graph reverse the
     latter two decisions.\\
     \textcolor{blue}{Changes made by STK: updated graph to be in accordance with the stated rule and p-values from the hypothetical table 6}}%
-    Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(A,B)$ and $(A,D)$ should be dropped, while the edge between $(C,D)$ is kept. Thus, we are left with the final Step 6 graph below.
+    Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(Y_1,Y_2)$ and $(Y_1,Y_4)$ should be dropped, while the edge between $(Y_3,Y_4)$ is kept. Thus, we are left with the final Step 6 graph below.
     \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
-\node[nodecircle] (B) {$B$};
-\node[nodecircle,below=of B, xshift=-2cm] (A) {$A$};
-\node[nodecircle,below=of A] (D) {$D$};
-\node[nodecircle,below=of D, xshift=2cm] (C) {$C$};
+\node[nodecircle] (B) {$Y_2$};
+\node[nodecircle,below=of B, xshift=-2cm] (A) {$Y_1$};
+\node[nodecircle,below=of A] (D) {$Y_4$};
+\node[nodecircle,below=of D, xshift=2cm] (C) {$Y_3$};
 
 \node[nodecircle,right=of A, xshift=1cm,yshift=-0.5cm] (S) {$\theta$};
 
-\node[nodecircle,right=of S,yshift=-1cm] (X) {$X$};
-\node[nodecircle,right=of S,yshift=2cm] (Z) {$Z$};
+\node[nodecircle,right=of S,yshift=-1cm] (X) {$X_1$};
+\node[nodecircle,right=of S,yshift=2cm] (Z) {$X_2$};
 
 %\draw[ld] (A)--(B);
 \draw[ld] (C)--(D);
