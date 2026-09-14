@@ -137,15 +137,15 @@ The latter of these approaches is the basis of a stepwise screening procedure fo
 
 \subsection{Models for measurement}\label{sec:models_measurement}
 
-Let $\Theta$ denote the latent trait that the instrument intends to measure. The Rasch model describes the relationship between this trait and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. Let $\boldsymbol{X}=(X_i)_{i=1,\ldots,m}$ denote a set of covariates. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$; the general case of ordinal items with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. 
+Let $\Theta$ denote the latent trait that the instrument intends to measure. The Rasch model describes the relationship between this trait and observed item responses $\boldsymbol{Y}=(Y_i)_{i=1,\ldots,k}$. Let $\boldsymbol{X}=(X_l)_{l=1,\ldots,m}$ denote a set of covariates. For ease of exposition, the main text considers dichotomous items, $Y_i\in\{0,1\}$, and only dichotomous covariates $X_l\in\{0,1\}$; the general case of ordinal items and covariates with more than two response categories is given in Appendix~\ref{sec:AppGeneral}. 
 
-\coauthortodo{\textbf{Item notation.} Please check the $X$ item-pair indices against the $Y$ notation. Should the IRF below be $E(Y_i\mid\theta)$ or $P(Y_i=1\mid\theta)$?\\
-\textcolor{blue}{changes accepted and implemented, by STK, concerning the "X item-pair, and the IRF representation. Since we are working with the dichotomous model, the IRF should be an increasing function of $\theta$ when $Y_j=1.$}}%
+%\coauthortodo{\textbf{Item notation.} Please check the $X$ item-pair indices against the $Y$ notation. Should the IRF below be $E(Y_i\mid\theta)$ or $P(Y_i=1\mid\theta)$?\\ \textcolor{blue}{changes accepted and implemented, by STK, concerning the "X item-pair, and the IRF representation. Since we are working with the dichotomous model, the IRF should be an increasing function of $\theta$ when $Y_j=1.$}}%
+
 The Rasch model imposes the following requirements: (i) $\theta$ is unidimensional; (ii) local independence: $Y_i\perp Y_j|\theta$ for all item pairs $(Y_i,Y_j)$; (iii) absence of DIF: $Y_i\perp X_l|\theta$ for all pairs $(Y_i,X_l)$ where $Y_i$ is an item and $X_l$ is a covariate; (iv) the parametric form of the response probabilities is
 $$
 P(Y_i=y|\theta)=\frac{\exp(y(\theta+\alpha_{i}))}{1+\exp(\theta+\alpha_{i})}
 $$
-The last requirement ensures that the item response function (IRF) $\theta\mapsto E(Y_j=1|\theta)$ is monotone and increasing. Interpreting $-\alpha_i$ as the item location is often useful.
+The last requirement ensures that the item response function (IRF) $\theta\mapsto E(Y_j|\theta)=P(Y_j=1|\theta)$ is monotone and increasing. Interpreting $-\alpha_i$ as the item location is often useful.
 
 \subsubsection{Notation}
 
@@ -164,19 +164,47 @@ $$
 is a normalizing constant that does not depend on the observed data $(\boldsymbol{y},\boldsymbol{x})$. Equation~\eqref{eq:sufficient} shows that the total score $S$ is sufficient for $\theta$: it contains all the information about $\theta$ available in the response pattern. Here, $S$ is an observed statistic, whereas $\theta$ is the latent-trait parameter.
 
 \subsubsection{Adding LD and DIF}
-\coauthortodo{\textbf{Parameters.} Are $\lambda_{ij}$ and $\delta_{il}$ interaction coefficients rather than binary indicators? Please clarify the description below.}%
 
-The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this model is easily extended to include (i) interaction terms between item pairs (to model LD) and (ii) interaction terms between item and exogenous variable pairs (to model DIF). This leads to the following form for the graphical Rasch model for dichotomous items
+%\coauthortodo{\textbf{Parameters.} Are $\lambda_{ij}$ and $\delta_{il}$ interaction coefficients rather than binary indicators? Please clarify the description below.}%
 
+The general form represented in (\ref{eq:sufficient}) is a log-linear model containing only main effects, and this model is easily extended to include (i) interaction terms between item pairs (to model LD) and (ii) interaction terms between item and exogenous variable pairs (to model DIF). Let $\boldsymbol{L}=(L_{ij})$ and $\boldsymbol{D}=(D_{il})$ be indicators of LD and DIF, respectively:
+$$
+L_{ij} = \begin{cases}
+1 & \textrm{LD for }(Y_i,Y_j)\\
+0 & \textrm{otherwise}
+\end{cases}
+$$
+and
+$$
+D_{il} = \begin{cases}
+1 & \textrm{DIF for }Y_i\textrm{ with respect to }X_l\\
+0 & \textrm{otherwise}
+\end{cases}
+$$
+This yields to the following form for the graphical Rasch model for dichotomous items:
 \begin{align}
 P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^k\alpha_iy_i+(\star)\Big),
 \label{eq:also-sufficient}
 \end{align}
 where
 \begin{align}
-(\star)=\sum_{i=1}^{k}\sum_{j>i}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}\delta_{il}y_ix_l
+\label{eq:interactions}
+(\star)=\sum_{i=1}^{k}\sum_{j>i}L_{ij}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}\delta_{il}y_ix_l
 \end{align}
-where $\lambda_{ij}$ is an indicator of LD for item pair $(i,j)$ and $\delta_{il}$ is an indicator of DIF for item $Y_i$ with respect to covariate $X_l$. Equation~\eqref{eq:also-sufficient} shows that $S$ is also sufficient for $\theta$ in this more general model.
+where $\lambda_{ij}$ is an interaction coefficient indicator of LD for item pair $(i,j)$ and $\delta_{il}$ is an indicator of DIF for item $Y_i$ with respect to covariate $X_l$. Equation~\eqref{eq:also-sufficient} shows that $S$ is also sufficient for $\theta$ in this more general model.
+
+\begin{mybox3}
+\begin{example}
+\label{ex:gRm-interactions}
+%\coauthortodo{\textbf{Example indices.} Should the LD pairs be $(Y_1,Y_2)$ and $(Y_1,Y_4)$? Also check $x_l$ in the DIF term below against the stated $X_1$ effect. \\ \textcolor{blue}{Changes accepted and implemented by STK.}}%
+
+For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(Y_1,Y_2)$ and $(Y_1,Y_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$. This can be represented using (i) $L_{12}=1$, $L_{14}=1$, $D_{21}=1$, $D_{22}=1$; (ii) all other elements of $\boldsymbol{L}$ and $\boldsymbol{D}$ equal to zero. This means that (\ref{eq:interactions}) is
+\begin{align*}
+(\star)=\lambda_{12}y_1y_2+\lambda_{14}y_1y_4 +\delta_{21}y_2x_1+\delta_{22}y_2x_2
+\end{align*}
+
+\end{example}
+\end{mybox3}
 
 \subsubsection{Representation as a graph}
 
@@ -184,9 +212,8 @@ The model can be represented as a graph where items and covariates are represent
 
 \begin{mybox3}
 \begin{example}
-\coauthortodo{\textbf{Example indices.} Should the LD pairs be $(Y_1,Y_2)$ and $(Y_1,Y_4)$? Also check $x_l$ in the DIF term below against the stated $X_1$ effect. \\
-\textcolor{blue}{Changes accepted and implemented by STK.}}%
-For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$ suppose within the dataset there is LD for the two item pairs $(Y_1,Y_2)$ and $(Y_1,Y_4)$ and that DIF exists for the pairs $(Y_2,X_1)$ and $(Y_2,X_2)$, and finally that $X_1$ is related to $\theta$. This can be represented in the graph
+
+The graphical Rasch model in Example \ref{ex:gRm-interactions} is represented as
 
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
@@ -215,18 +242,6 @@ For a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_
 
 \end{tikzpicture}
 \end{center}
-
-Here
-
-\begin{align}
-P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alpha_0+\theta S+\sum_{i=1}^4\alpha_iy_i+(\star)\Big),
-\label{eq:also-sufficient-example}
-\end{align}
-where
-\begin{align}
-(\star)=\lambda_{12}y_1y_2+\lambda_{14}y_1y_4 +\delta_{21}y_2x_1+\delta_{22}y_2x_2
-\end{align}
-
 \end{example}
 \end{mybox3}
 
@@ -264,20 +279,19 @@ rejecting when the corresponding $p$-value is below $0.05$ after controlling for
 
 Step 3 filters out spurious evidence of LD and DIF through Steps 3(a), 3(b), and 3(c), described below.
 
-\paragraph{Step 3(a): Elimination of spurious evidence of LD.} From the initial LD screening in Step 2, we look at all flagged evidence of LD and create four lists:
-\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.\\
-\textcolor{blue}{change made by STK: list "(v) item pairs with no significant partial $\gamma$ coefficients." removed, since no such list is created.}}%
+\paragraph{Step 3(a): Elimination of spurious evidence of LD.} From the initial LD screening in Step 2, we look at all flagged evidence of LD and create five lists:
+
+\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.\\ \textcolor{blue}{change made by STK: list "(v) item pairs with no significant partial $\gamma$ coefficients." removed, since no such list is created.\\ \textcolor{orange}{change made by KACH: Fifth list is remainder.}}}%
 
 \begin{enumerate}
-\item[(i)] item pairs with two significant positive partial $\gamma$ coefficients.
-\item[(ii)] item pairs with two significant negative partial $\gamma$ coefficients.
-\item[(iii)] item pairs with only one significant positive partial $\gamma$ coefficient.
-\item[(iv)] item pairs with only one significant negative partial $\gamma$ coefficient. 
-\item[(v)] item pairs with no significant partial $\gamma$ coefficients. 
+\item[(i)] pairs flagged with two significant positive partial $\gamma$ coefficients.
+\item[(ii)] pairs flagged with two significant negative partial $\gamma$ coefficients.
+\item[(iii)] pairs flagged with only one significant positive partial $\gamma$ coefficient.
+\item[(iv)] pairs flagged with only one significant negative partial $\gamma$ coefficient. 
+\item[(v)] All other item pairs. 
 \end{enumerate}
 
-For each pair, compute the weighted partial $\gamma$. Apply stepwise inclusion to the pairs flagged for LD, prioritizing pairs with two significant directional tests over those with only one. Within each priority group, select the pair with the largest absolute weighted partial $\gamma$ and retain it as genuine LD. Remove from further consideration all directional tests whose conditioning rest-score is defined by either item in the selected pair. Update the evidence lists (i)--(v) accordingly and repeat until no flagged pairs remain.
-
+For each pair, compute the weighted partial $\gamma$. Apply stepwise inclusion to the pairs flagged for LD, prioritizing pairs with two significant directional tests over those with only one. Within each priority group, select the pair with the largest absolute weighted partial $\gamma$ and retain it as genuine LD. Remove from further consideration all directional tests whose conditioning rest-score is defined by either item in the selected pair. Update the evidence lists (i)--(v) accordingly and repeat until no flagged pairs remain. 
 
 \paragraph{Step 3(b): Elimination of spurious evidence for items with more than one
 DIF source.} This procedure is implemented as Algorithm~\ref{alg:step3b} in Appendix~\ref{sec:AppAlgorithms}; no source is removed from the candidate list until all tests in the current iteration have been performed. Significance is assessed via the asymptotic $p$-value of the partial gamma test (Algorithm \ref{alg:part_gam} in Appendix~\ref{sec:AppAlgorithms}).
