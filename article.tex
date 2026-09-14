@@ -570,7 +570,7 @@ $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_4}^c},X_1$ & $0.33$ & not supported \\
 
 \section{Results}
 
-We apply the screening procedure to data from $99$ respondents who completed the $10$ item version of Actinic Keratosis Quality of Life (AKQoL) questionnaire \cite{Esmann-2013}. Items $Q1$--$Q10$, each scored $0$--$3$ along with two covariates were also recorded: sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ respondents have complete item and covariate data.
+We apply the screening procedure to data from $99$ respondents who completed the $10$ item version of Actinic Keratosis Quality of Life (AKQoL) questionnaire \cite{Esmann-2013}. Items $Q1$--$Q10$, each scored $0$--$3$ along with two covariates were also recorded: sex (\texttt{gender}, $1=$ woman) and age (\texttt{age}, in years). All $99$ respondents have complete item and covariate data.
 
 \subsection{Step 1}
 All items pass M2: each is positively associated with its rest-score, with the smallest association observed for $Q9$ ($\gamma=0.078$). Both M1 and M3 flag $Q9$. M1 fails because the association between $Q5$ and $Q9$ is negative ($\gamma=-0.168$); all other $\binom{10}{2}-1$ item pairs have non-negative associations. For M3, age passes because its associations with the score and all items are consistently negative (score $\gamma=-0.164$). Sex fails because its association with $Q9$ ($\gamma=-0.121$) has the opposite sign to its association with the score ($\gamma=0.338$). Its associations with all other items have the same sign as its association with the score. Because the inconsistencies in M1 and M3 are confined to $Q9$, we proceed to Step 2.
@@ -586,8 +586,8 @@ Controlling the false discovery rate (FDR) with Benjamini--Hochberg, the initial
 \toprule
 Item & Source & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
-$Q4$ & Alder & $0.383$ & $0.0031$ & $0.031$ & * \\
-$Q5$ & woman & $0.727$ & $0.0008$ & $0.017$ & * \\
+$Q4$ & age & $0.383$ & $0.0031$ & $0.031$ & * \\
+$Q5$ & gender & $0.727$ & $0.0008$ & $0.017$ & * \\
 \bottomrule
 \end{tabular}
 \caption{Initial evidence of DIF (Step 2).}
@@ -634,8 +634,8 @@ Each flagged item has exactly one candidate DIF source and each source only one 
 \toprule
 Item & Source & partial $\gamma$ & $p$ & Conclusion \\
 \midrule
-$Q4$ & Alder & $0.383$ & $0.0031$ & DIF \\
-$Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
+$Q4$ & age & $0.383$ & $0.0031$ & DIF \\
+$Q5$ & gender & $0.727$ & $0.0008$ & DIF \\
 \bottomrule
 \end{tabular}
 \caption{Result of combining Steps 3(b) and 3(c) (asymptotic $p$-values, both conditioning sets are $S$).}
@@ -643,17 +643,17 @@ $Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
 \end{table}
 
 \subsection{Step 4}
-Backward elimination retains neither covariate as a structural predictor of the score: conditioned on the other, both \texttt{woman} and \texttt{Alder} fail to reach significance, and \texttt{woman}'s marginal association does not support criterion validity either.
+Backward elimination retains neither covariate as a structural predictor of the score: conditioned on the other, both \texttt{gender} and \texttt{age} fail to reach significance, and \texttt{gender}'s marginal association does not support criterion validity either.
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}lrrll@{}}
 \toprule
 Covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.C.V. \\
 \midrule
-woman & $0.357$ & $0.105$ & Alder & FALSE \\
-Alder & $-0.054$ & $0.502$ & woman & FALSE \\
+gender & $0.357$ & $0.105$ & age & FALSE \\
+age & $-0.054$ & $0.502$ & gender & FALSE \\
 \midrule
-woman (final) & $0.338$ & NA & None & FALSE \\
+gender (final) & $0.338$ & NA & None & FALSE \\
 \bottomrule
 \end{tabular}
 \caption{Step 4 backward elimination search (asymptotic $p$-values). $\mathcal{C}$ is the conditioning set; S.C.V.\ abbreviates ``supports criterion validity''.}
@@ -661,7 +661,7 @@ woman (final) & $0.338$ & NA & None & FALSE \\
 \end{table}
 
 \subsection{Step 5}
-Collecting the Step 3 and Step 4 results gives the tentative GLLRM: a measurement edge $\theta\to Q_i$ for each item, DIF edges Alder$\,\to Q4$ and woman$\,\to Q5$, and LD edges $(Q3,Q10)$ and $(Q5,Q6)$. Because neither covariate supported criterion validity in Step 4, the graph includes no score-covariate association; \texttt{Alder} and \texttt{woman} enter the graph only through their DIF edges on $Q4$ and $Q5$, respectively.
+Collecting the Step 3 and Step 4 results gives the tentative GLLRM: a measurement edge $\theta\to Q_i$ for each item, DIF edges age$\,\to Q4$ and gender$\,\to Q5$, and LD edges $(Q3,Q10)$ and $(Q5,Q6)$. Because neither covariate supported criterion validity in Step 4, the graph includes no score-covariate association; \texttt{age} and \texttt{gender} enter the graph only through their DIF edges on $Q4$ and $Q5$, respectively.
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}lll@{}}
@@ -669,8 +669,8 @@ Collecting the Step 3 and Step 4 results gives the tentative GLLRM: a measuremen
 From & To & Edge type \\
 \midrule
 $\theta$ & $Q1,\dots,Q10$ & measurement \\
-Alder & $Q4$ & DIF \\
-woman & $Q5$ & DIF \\
+age & $Q4$ & DIF \\
+gender & $Q5$ & DIF \\
 $Q3$ & $Q10$ & local dependence \\
 $Q5$ & $Q6$ & local dependence \\
 \bottomrule
@@ -691,8 +691,8 @@ The retained DIF and LD edges are retested under the conditioning sets implied b
 \toprule
 Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
 \midrule
-Alder $\to Q4$ & $C5$ & $0.383$ & $0.0031$ & Retained \\
-woman $\to Q5$ & $C5$ & $0.727$ & $0.0008$ & Retained \\
+age $\to Q4$ & $C5$ & $0.383$ & $0.0031$ & Retained \\
+gender $\to Q5$ & $C5$ & $0.727$ & $0.0008$ & Retained \\
 \bottomrule
 \end{tabular}
 \caption{Step 6 retesting of the Step 5 DIF edges (\texttt{step6\_check\_gllrm}).}
@@ -714,7 +714,7 @@ $Q5$--$Q6$  & $0.765$  & $0.0002$  & $0.362$  & $0.142$  & Retained \\
 \caption{Step 6 retesting of the Step 5 LD edges. An edge is retained if at least one of $C7$/$C9$ is significant.}
 \label{tab:ak_step6_ld}
 \end{table}
-Both DIF edges survive their $C5$ tests: Alder$\,\to Q4$ ($p=0.0031$) and woman$\,\to Q5$ ($p=0.0008$). Both LD pairs survive, each with at least one significant conditioning direction. The final GLLRM for the AK data therefore retains all $10$ items, two genuine DIF effects (Alder on $Q4$ and woman on $Q5$), and two genuine LD pairs ($Q3$--$Q10$ and $Q5$--$Q6$); neither covariate supported criterion validity in Step 4, so the model includes no score-covariate association.
+Both DIF edges survive their $C5$ tests: age$\,\to Q4$ ($p=0.0031$) and gender$\,\to Q5$ ($p=0.0008$). Both LD pairs survive, each with at least one significant conditioning direction. The final GLLRM for the AK data therefore retains all $10$ items, two genuine DIF effects (age on $Q4$ and gender on $Q5$), and two genuine LD pairs ($Q3$--$Q10$ and $Q5$--$Q6$); neither covariate supported criterion validity in Step 4, so the model includes no score-covariate association.
 
 
 \section{Discussion}
