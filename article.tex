@@ -245,6 +245,10 @@ The graphical Rasch model in Example \ref{ex:gRm-interactions} is represented as
 \end{example}
 \end{mybox3}
 
+for a grapchical Rasch model we use $\mathrm{SOURCE}(Y_i)$ to denote the set 
+covariates $X_l$ where $D_{il}=1$ and $\mathrm{DIF}(X_l)$ to denote the set 
+items $Y_l$ where $D_{il}=1$.
+
 \section{Methods}\label{sec:it_sec}
 
 This section describes the six-step item screening procedure. We assume that $V(\Theta)>0$. The analysis requires an association measure, a corresponding partial association measure, a method for calculating $p$-values, and a procedure for adjusting for multiple testing.
@@ -281,7 +285,7 @@ Step 3 filters out spurious evidence of LD and DIF through Steps 3(a), 3(b), and
 
 \paragraph{Step 3(a): Elimination of spurious evidence of LD.} From the initial LD screening in Step 2, we look at all flagged evidence of LD and create five lists:
 
-\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.\\ \textcolor{blue}{change made by STK: list "(v) item pairs with no significant partial $\gamma$ coefficients." removed, since no such list is created.\\ \textcolor{orange}{change made by KACH: Fifth list is remainder.}}}%
+\coauthortodo{\textbf{Evidence lists.} Four lists are announced, but five are listed. The algorithm uses four active lists. Please reconcile these descriptions.\\ \textcolor{blue}{change made by STK: list "(v) item pairs with no significant partial $\gamma$ coefficients." removed, since no such list is created.}\\ \textcolor{orange}{change made by KACH: Fifth list is remainder.}}%
 
 \begin{enumerate}
 \item[(i)] pairs flagged with two significant positive partial $\gamma$ coefficients.
@@ -303,8 +307,8 @@ DIF effect on more than one item.} This step applies the same elimination proced
 
 \begin{mybox3}
 \begin{example}
-Assume we have five items $\{Y_1,Y_2,Y_3,Y_4,Y_5\}$ and two exogenous variables
-$\{X_1,X_2\}$. Suppose the initial DIF screening in Step 2 flags the following
+Assume we have five items $\{A,B,C,D,E\}$ and two exogenous variables
+$\{X,Z\}$. Suppose the initial DIF screening in Step 2 flags the following
 item-covariate pairs:
 
 \begin{table}[H]
@@ -313,10 +317,10 @@ item-covariate pairs:
 \hline
 Item & Covariate & Partial $\gamma$ & $p$-value \\
 \hline
-$Y_1$ & $X_1$ & $0.42$ & $0.004$ \\
-$Y_1$ & $X_2$ & $0.31$ & $0.030$ \\
-$Y_3$ & $X_1$ & $-0.36$ & $0.018$ \\
-$Y_5$ & $X_2$ & $0.55$ & $0.001$ \\
+$A$ & $X$ & $0.42$ & $0.004$ \\
+$A$ & $Z$ & $0.31$ & $0.030$ \\
+$C$ & $X$ & $-0.36$ & $0.018$ \\
+$E$ & $Z$ & $0.55$ & $0.001$ \\
 \hline
 \end{tabular}
 \caption{Initial evidence of DIF from Step 2.}
@@ -325,11 +329,11 @@ $Y_5$ & $X_2$ & $0.55$ & $0.001$ \\
 
 From this table we construct the source and DIF sets
 \[
-SOURCE(Y_1)=\{X_1,X_2\}, \qquad SOURCE(Y_3)=\{X_1\}, \qquad SOURCE(Y_5)=\{X_2\},
+SOURCE(A)=\{X,Z\}, \qquad SOURCE(C)=\{X\}, \qquad SOURCE(E)=\{Z\},
 \]
 and
 \[
-DIF(X_1)=\{Y_1,Y_3\}, \qquad DIF(X_2)=\{Y_1,Y_5\}.
+DIF(X)=\{A,C\}, \qquad DIF(Z)=\{A,E\}.
 \]
 
 Step 3(b) tests, for each item $Y_i$, whether each candidate source remains associated with $Y_i$ after conditioning on the score and the other candidate sources. Suppose it gives the following result:
@@ -340,11 +344,11 @@ Step 3(b) tests, for each item $Y_i$, whether each candidate source remains asso
 \hline
 Item & Candidate source & Hypothesis & $p$-value & 3(b) decision & Iteration \\
 \hline
-$Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S, X_2$ & $0.06$ & Retain & 1\\
-$Y_1$ & $X_2$ & $Y_1 \perp X_2 \mid S,X_1$ & $0.210$ & Remove & 1\\
-$Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain & 2\\
-$Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S$ & $0.018$ & Retain & 1\\
-$Y_5$ & $X_2$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 1\\
+$A$ & $X$ & $A \perp X \mid S, Z$ & $0.06$ & Retain & 1\\
+$A$ & $Z$ & $A \perp Z \mid S,X$ & $0.210$ & Remove & 1\\
+$A$ & $X$ & $A \perp X \mid S$ & $0.004$ & Retain & 2\\
+$C$ & $X$ & $C \perp X \mid S$ & $0.018$ & Retain & 1\\
+$E$ & $Z$ & $E \perp Z \mid S$ & $0.001$ & Retain & 1\\
 \hline
 \end{tabular}
 \caption{Hypothetical Step 3(b) elimination of spurious DIF sources. Note that “Retain” in an intermediate iteration means that it will not be removed during that pass.}
@@ -353,9 +357,9 @@ $Y_5$ & $X_2$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 1\\
 
 Thus Step 3(b) returns
 \[
-SOURCE^{(3b)}(Y_1)=\{X_1\}, \quad
-SOURCE^{(3b)}(Y_3)=\{X_1\}, \quad
-SOURCE^{(3b)}(Y_5)=\{X_2\}.
+SOURCE^{(3b)}(A)=\{X\}, \quad
+SOURCE^{(3b)}(C)=\{X\}, \quad
+SOURCE^{(3b)}(E)=\{Z\}.
 \]
 
 Step 3(c) tests, for each covariate $X_j$, whether each candidate DIF item remains associated with $X_j$ after conditioning on the score and the other candidate items. Suppose it gives the following result:
@@ -366,12 +370,12 @@ Step 3(c) tests, for each covariate $X_j$, whether each candidate DIF item remai
 \hline
 Covariate & Candidate item & Hypothesis & $p$-value & 3(c) decision & Iteration\\
 \hline
-$X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S,Y_3$ & $0.09$ & Retain & 1\\
-$X_1$ & $Y_3$ & $Y_3 \perp X_1 \mid S,Y_1$ & $0.160$ & Remove & 1 \\
-$X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain & 2\\
-$X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S,Y_1$ & $0.2$ & Retain & 1 \\
-$X_2$ & $Y_1$ & $Y_1 \perp X_2 \mid S,Y_5$ & $0.280$ & Remove & 1\\
-$X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 2\\
+$X$ & $A$ & $A \perp X \mid S,C$ & $0.09$ & Retain & 1\\
+$X$ & $C$ & $C \perp X \mid S,A$ & $0.160$ & Remove & 1 \\
+$X$ & $A$ & $A \perp X \mid S$ & $0.004$ & Retain & 2\\
+$Z$ & $E$ & $E \perp Z \mid S,A$ & $0.2$ & Retain & 1 \\
+$Z$ & $A$ & $A \perp Z \mid S,E$ & $0.280$ & Remove & 1\\
+$Z$ & $E$ & $E \perp Z \mid S$ & $0.001$ & Retain & 2\\
 \hline
 \end{tabular}
 \caption{Hypothetical Step 3(c) elimination of spurious DIF items. Note that “Retain” in an intermediate iteration means that it will not be removed during that pass.}
@@ -380,8 +384,8 @@ $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 2\\
 
 Thus Step 3(c) returns
 \[
-DIF^{(3c)}(X_1)=\{Y_1\}, \qquad
-DIF^{(3c)}(X_2)=\{Y_5\}.
+DIF^{(3c)}(X)=\{A\}, \qquad
+DIF^{(3c)}(Z)=\{E\}.
 \]
 
 Finally, we combine the results from Step 3(b) and Step 3(c). An item-covariate
@@ -393,16 +397,16 @@ pair is retained as genuine DIF only if it survives both procedures.
 \hline
 Item & Covariate & Survives Step 3(b) & Survives Step 3(c) & Conclusion \\
 \hline
-$Y_1$ & $X_1$ & Yes & Yes & Genuine DIF \\
-$Y_1$ & $X_2$ & No & No & Spurious \\
-$Y_3$ & $X_1$ & Yes & No & Spurious \\
-$Y_5$ & $X_2$ & Yes & Yes & Genuine DIF \\
+$A$ & $X$ & Yes & Yes & Genuine DIF \\
+$A$ & $Z$ & No & No & Spurious \\
+$C$ & $X$ & Yes & No & Spurious \\
+$E$ & $Z$ & Yes & Yes & Genuine DIF \\
 \hline
 \end{tabular}
 \caption{Combining Step 3(b) and Step 3(c).}
 \label{tab:step3_example_combined}
 \end{table}
-
+Y_1,Y_2,Y_3,Y_4,Y_5_1,X_2Y_1_1Y_1X_2Y_3_1Y_5X_2Y_1_1,X_2Y_3_1Y_5X_2_1Y_1,Y_3X_2Y_1,Y_5Y_1_1Y_1_1X_2Y_1X_2Y_1X_2_1Y_1_1Y_1_1Y_3_1Y_3_1Y_5X_2Y_5X_2Y_1_1Y_3_1Y_5X_2_1Y_1Y_1_1Y_3_1Y_3Y_3_1Y_1_1Y_1Y_1_1X_2Y_5Y_5X_2Y_1X_2Y_1Y_1X_2Y_5X_2Y_5Y_5X_2_1Y_1X_2Y_5Y_1_1Y_1X_2Y_3_1Y_5X_2
 Therefore, the final genuine DIF relations are
 \[
 Y_1 \sim X_1
