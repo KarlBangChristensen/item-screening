@@ -10,7 +10,7 @@ M2 passes: every item is positively related to its rest-score, the weakest being
 Controlling for the FDR with Benjamin--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llrrrl@{}}
 \toprule
 Item & Source & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
@@ -23,7 +23,7 @@ $Q5$ & woman & $0.727$ & $0.0008$ & $0.017$ & * \\
 \end{table}
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llrrrl@{}}
 \toprule
 Item 1 & Item 2 & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
@@ -42,7 +42,7 @@ $Q3$  & $Q10$ & $-0.755$ & $<0.0001$ & $<0.0001$ & *** \\
 The stepwise inclusion algorithm accepts $(Q3,Q10)$ (weighted partial $\gamma=-0.694$) and $(Q5,Q6)$ (weighted partial $\gamma=0.494$) as genuine LD. The remaining candidates, $(Q3,Q9)$ and $(Q6,Q9)$, are disregarded as spurious once $Q3$ and $Q6$ are used to define the rest-scores for the accepted pairs -- consistent with $Q9$'s already anomalous behaviour in Step 1.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llc@{}}
+\begin{tabular}{@{}llr@{}}
 \toprule
 Item 1 & Item 2 & weighted partial $\gamma$ \\
 \midrule
@@ -58,7 +58,7 @@ $Q5$ & $Q6$  & $0.494$ \\
 Each flagged item has exactly one candidate DIF source and each source only one candidate item, so the elimination algorithms of Step 3(b)/(c) have nothing to condition away: both relations from Step 2 pass through unchanged and are carried forward as candidate genuine DIF.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llccc@{}}
+\begin{tabular}{@{}llrrl@{}}
 \toprule
 Item & Source & partial $\gamma$ & $p$ & Conclusion \\
 \midrule
@@ -74,7 +74,7 @@ $Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
 Backward elimination retains \texttt{woman} and drops \texttt{Alder} as a structural predictor of the score.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lcccl@{}}
+\begin{tabular}{@{}lrrll@{}}
 \toprule
 Covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.C.V. \\
 \midrule
@@ -112,7 +112,7 @@ $Q5$ & $Q6$ & local dependence \\
 The retained DIF and LD edges are retested under the conditioning sets implied by the Step 5 graph. For DIF this is the $C5$ hypothesis of \eqref{C5}; for each LD pair the two $C7$/$C9$ hypotheses are tested, with an edge kept if at least one is significant.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llccl@{}}
+\begin{tabular}{@{}llrrl@{}}
 \toprule
 Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
 \midrule
@@ -125,7 +125,7 @@ woman $\to Q5$ & $C5$ & $0.727$ & $0.032$ & Retained \\
 \end{table}
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lccccl@{}}
+\begin{tabular}{@{}lrrrrl@{}}
 \toprule
 Edge & $C7$: $\gamma$ & $C7$: $p$ & $C9$: $\gamma$ & $C9$: $p$ & Decision \\
 \midrule

@@ -313,7 +313,7 @@ item-covariate pairs:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{ccrr}
+\begin{tabular}{llrr}
 \hline
 Item & Covariate & Partial $\gamma$ & $p$-value \\
 \hline
@@ -331,7 +331,7 @@ From this $\mathrm{SOURCE}(Y_1)=\{X_1,X_2\}$, $\mathrm{SOURCE}(Y_3)=\{X_1\}$, $\
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c r l}
+\begin{tabular}{r l l l r l}
 \hline
 Iteration & Item & Candidate source & Hypothesis & $p$-value & 3(b) decision  \\
 \hline
@@ -357,7 +357,7 @@ Step 3(c) tests, for each covariate $X_l$, whether each candidate DIF item remai
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c r l}
+\begin{tabular}{r l l l r l}
 \hline
 Iteration & Covariate & Candidate item & Hypothesis & $p$-value & 3(c) decision \\
 \hline
@@ -382,7 +382,7 @@ Step 3(c) returns $\mathrm{DIF}^{(3c)}(X_1)=\{Y_1\}$ and $\mathrm{DIF}^{(3c)}(X_
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c c}
+\begin{tabular}{l l l l l}
 \hline
 Item & Covariate & Survives Step 3(b) & Survives Step 3(c) & Conclusion \\
 \hline
@@ -439,7 +439,7 @@ For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identif
 Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(Y_1,Y_2), (Y_3,Y_4), (Y_1,Y_4)$, and finally $X_1$ is related to the score $S$. Step 6 now retests the DIF using \eqref{C5}.
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c c}
+\begin{tabular}{l l l r l}
 \hline
 Item & Candidate source & Hypothesis & $p$-value & Decision \\
 \hline
@@ -512,7 +512,7 @@ Doing this for all LD edges, suppose we observe the following table of tests
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c}
+\begin{tabular}{l l r l}
 \hline
 LD pair & Hypothesis & $p$-value & Decision \\
 \hline
@@ -582,7 +582,7 @@ Controlling the false discovery rate (FDR) with Benjamini--Hochberg, the initial
 
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llrrrl@{}}
 \toprule
 Item & Source & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
@@ -595,7 +595,7 @@ $Q5$ & woman & $0.727$ & $0.0008$ & $0.017$ & * \\
 \end{table}
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llcccc@{}}
+\begin{tabular}{@{}llrrrl@{}}
 \toprule
 Item 1 & Item 2 & partial $\gamma$ & $p$ & $p_{\mathrm{adj}}$ & sig. \\
 \midrule
@@ -614,7 +614,7 @@ $Q3$  & $Q10$ & $-0.755$ & $<0.0001$ & $<0.0001$ & *** \\
 The stepwise inclusion algorithm accepts $(Q3,Q10)$ (weighted partial $\gamma=-0.694$) and $(Q5,Q6)$ (weighted partial $\gamma=0.494$) as genuine LD. The remaining candidates, $(Q3,Q9)$ and $(Q6,Q9)$, are disregarded as spurious once $Q3$ and $Q6$ are used to define the rest-scores for the accepted pairs -- consistent with $Q9$'s already anomalous behavior in Step 1.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llc@{}}
+\begin{tabular}{@{}llr@{}}
 \toprule
 Item 1 & Item 2 & weighted partial $\gamma$ \\
 \midrule
@@ -630,7 +630,7 @@ $Q5$ & $Q6$  & $0.494$ \\
 Each flagged item has exactly one candidate DIF source and each source only one candidate item, so the elimination algorithms of Steps 3(b) and 3(c) have nothing to condition away: both relations from Step 2 pass through unchanged and are carried forward as candidate genuine DIF.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llccc@{}}
+\begin{tabular}{@{}llrrl@{}}
 \toprule
 Item & Source & partial $\gamma$ & $p$ & Conclusion \\
 \midrule
@@ -646,7 +646,7 @@ $Q5$ & woman & $0.727$ & $0.0008$ & DIF \\
 Backward elimination retains \texttt{woman} and drops \texttt{Alder} as a structural predictor of the score.
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lcccl@{}}
+\begin{tabular}{@{}lrrll@{}}
 \toprule
 Covariate & partial $\gamma$ & $p$ & $\mathcal{C}$ & S.C.V. \\
 \midrule
@@ -688,7 +688,7 @@ The retained DIF and LD edges are retested under the conditioning sets implied b
 
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}llccl@{}}
+\begin{tabular}{@{}llrrl@{}}
 \toprule
 Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
 \midrule
@@ -704,7 +704,7 @@ woman $\to Q5$ & $C5$ & $0.727$ & $0.0008$ & Retained \\
 
 \begin{table}[H]
 \centering
-\begin{tabular}{@{}lccccl@{}}
+\begin{tabular}{@{}lrrrrl@{}}
 \toprule
 Edge & $C7$: $\gamma$ & $C7$: $p$ & $C9$: $\gamma$ & $C9$: $p$ & Decision \\
 \midrule
