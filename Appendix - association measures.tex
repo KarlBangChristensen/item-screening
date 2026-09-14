@@ -6,9 +6,10 @@ Goodman and Kruskal's $\gamma$ \citeyearpar{goodman-kruskal-1954} measures assoc
 
 Partial $\gamma$ \citep{davis-1967} measures association within strata defined by the conditioning variables. For example, testing DIF between $Y_i$ and $X_j$ requires conditioning on the total score $S$. We therefore stratify the data by the observed values of $S$ and count concordant and discordant pairs within each stratum. Let $n$ denote the number of strata. Pooling the counts across strata gives the partial gamma coefficient, which can also be expressed as a weighted sum of the stratum-specific gamma coefficients:
 \coauthortodo{\textbf{Strata and weights.} Please use distinct item and stratum indices. If $C_l+D_l=0$, the weighted sum contains $0(0/0)$ although the pooled ratio may exist. Please specify omission or a zero-contribution convention for such strata.}%
+
 \begin{align}
-    \hat{\gamma}_{Y_i\bot X_j\mid S} &= \sum_{i=1}^n w_i\gamma^{GK}_i = \sum_{i=1}^n\frac{(C_i+D_i)}{\sum_{i=1}^n(C_i+D_i)}\frac{C_i-D_i}{C_i+D_i} \\
-    &= \frac{\sum_{i=1}^n(C_i-D_i)}{\sum_{i=1}^n(C_i+D_i)} = \frac{\sum_{i=1}^nC_i-\sum_{i=1}^nD_i}{\sum_{i=1}^nC_i+\sum_{i=1}^nD_i}.
+\hat{\gamma}_{Y_i\bot X_j\mid S} &= \sum_{s=1}^{k-1} w_i\gamma^{GK}_s = \sum_{s=1}^{k-1}\frac{(C_s+D_s)}{\sum_{s=1}^{k-1}(C_s+D_s)}\frac{C_s-D_s}{C_s+D_s} \\
+&= \frac{\sum_{s=1}^{k-1}(C_s-D_s)}{\sum_{s=1}^{k-1}(C_s+D_s)} = \frac{\sum_{s=1}^{k-1}C_s-\sum_{s=1}^{s-1}D_s}{\sum_{s=1}^{k-1}C_s+\sum_{s=1}^{k-1}D_s}.
 \end{align}
 Each stratum's weight is its number of comparable pairs (concordant plus discordant) divided by the total number of comparable pairs across all strata. Strata with more comparable pairs therefore contribute more to the pooled coefficient \citep{agresti-1984}.
 
