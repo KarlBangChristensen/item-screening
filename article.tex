@@ -306,14 +306,14 @@ DIF effect on more than one item.} This step applies the same elimination proced
 \paragraph{Combining Steps 3(b) and 3(c).} The two procedures run separately, and no final decision is made until both are complete. Their order therefore does not affect the combined decision. Each item--covariate pair carries two $p$-values, one from each step, and DIF is accepted as genuine only if both are significant.
 
 \begin{mybox3}
-\begin{example}
+\begin{example}\label{ex:step3b} \textbf{Step 3(b).}
 Assume we have five items $\{Y_1,Y_2,Y_3,Y_4,Y_5\}$ and two exogenous variables
 $\{X_1,X_2\}$. Suppose the initial DIF screening in Step 2 flags the following
 item-covariate pairs:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c}
+\begin{tabular}{ccrr}
 \hline
 Item & Covariate & Partial $\gamma$ & $p$-value \\
 \hline
@@ -327,69 +327,58 @@ $Y_5$ & $X_2$ & $0.55$ & $0.001$ \\
 \label{tab:step3_example_initial}
 \end{table}
 
-From this table we construct the source and DIF sets
-\[
-SOURCE(Y_1)=\{X_1,X_2\}, \qquad SOURCE(Y_3)=\{X_1\}, \qquad SOURCE(Y_5)=\{X_2\},
-\]
-and
-\[
-DIF(X_1)=\{Y_1,Y_3\}, \qquad DIF(X_2)=\{Y_1,Y_5\}.
-\]
-
-Step 3(b) tests, for each item $Y_i$, whether each candidate source remains associated with $Y_i$ after conditioning on the score and the other candidate sources. Suppose it gives the following result:
+From this $\mathrm{SOURCE}(Y_1)=\{X_1,X_2\}$, $\mathrm{SOURCE}(Y_3)=\{X_1\}$, $\mathrm{SOURCE}(Y_5)=\{X_2\}$, $\mathrm{DIF}(X_1)=\{Y_1,Y_3\}$, and $\mathrm{DIF}(X_2)=\{Y_1,Y_5\}$. Step 3(b) tests, for each item $Y_i$, whether each candidate source remains associated with $Y_i$ after conditioning on the score and the other candidate sources. Suppose it gives the following result:
 
 \begin{table}[H]
 \centering
 \begin{tabular}{c c c c c c}
 \hline
-Item & Candidate source & Hypothesis & $p$-value & 3(b) decision & Iteration \\
+Iteration & Item & Candidate source & Hypothesis & $p$-value & 3(b) decision  \\
 \hline
-$Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S, X_2$ & $0.06$ & Retain & 1\\
-$Y_1$ & $X_2$ & $Y_1 \perp X_2 \mid S,X_1$ & $0.210$ & Remove & 1\\
-$Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain & 2\\
-$Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S$ & $0.018$ & Retain & 1\\
-$Y_5$ & $X_2$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 1\\
+1 & $Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S, X_2$ & $0.06$ & Retain \\
+  & $Y_1$ & $X_2$ & $Y_1 \perp X_2 \mid S,X_1$ & $0.210$ & Remove \\
+  & $Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S$ & $0.018$ & Retain \\
+  & $Y_5$ & $X_2$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain \\
+2 & $Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain \\
 \hline
 \end{tabular}
-\caption{Hypothetical Step 3(b) elimination of spurious DIF sources. Note that “Retain” in an intermediate iteration means that it will not be removed during that pass.}
+\caption{Hypothetical Step 3(b) elimination of spurious DIF sources}
 \label{tab:step3_example_3b}
 \end{table}
+Thus Step 3(b) returns:
+$\mathrm{SOURCE}^{(3b)}(Y_1)=\{X_1\}$, $\mathrm{SOURCE}^{(3b)}(Y_3)=\{X_1\}$, and
+$\mathrm{SOURCE}^{(3b)}(Y_5)=\{X_2\}$.
+\end{example}
+\end{mybox3}
 
-Thus Step 3(b) returns
-\[
-SOURCE^{(3b)}(Y_1)=\{X_1\}, \quad
-SOURCE^{(3b)}(Y_3)=\{X_1\}, \quad
-SOURCE^{(3b)}(Y_5)=\{X_2\}.
-\]
-
-Step 3(c) tests, for each covariate $X_j$, whether each candidate DIF item remains associated with $X_j$ after conditioning on the score and the other candidate items. Suppose it gives the following result:
+\begin{mybox3}
+\begin{example}\label{ex:step3c} \textbf{Step 3(c).} 
+Step 3(c) tests, for each covariate $X_l$, whether each candidate DIF item remains associated with $X_l$ after conditioning on the score and the other candidate items. Suppose this gives the following result:
 
 \begin{table}[H]
 \centering
 \begin{tabular}{c c c c c c}
 \hline
-Covariate & Candidate item & Hypothesis & $p$-value & 3(c) decision & Iteration\\
+Iteration & Covariate & Candidate item & Hypothesis & $p$-value & 3(c) decision \\
 \hline
-$X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S,Y_3$ & $0.09$ & Retain & 1\\
-$X_1$ & $Y_3$ & $Y_3 \perp X_1 \mid S,Y_1$ & $0.160$ & Remove & 1 \\
-$X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain & 2\\
-$X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S,Y_1$ & $0.2$ & Retain & 1 \\
-$X_2$ & $Y_1$ & $Y_1 \perp X_2 \mid S,Y_5$ & $0.280$ & Remove & 1\\
-$X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain & 2\\
+1 & $X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S,Y_3$ & $0.09$ & Retain \\
+  & $X_1$ & $Y_3$ & $Y_3 \perp X_1 \mid S,Y_1$ & $0.160$ & Remove \\
+  & $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S,Y_1$ & $0.2$ & Retain \\
+  & $X_2$ & $Y_1$ & $Y_1 \perp X_2 \mid S,Y_5$ & $0.280$ & Remove \\
+2 & $X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain \\
+  & $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain \\
 \hline
 \end{tabular}
-\caption{Hypothetical Step 3(c) elimination of spurious DIF items. Note that “Retain” in an intermediate iteration means that it will not be removed during that pass.}
+\caption{Hypothetical Step 3(c) elimination of spurious DIF items.}
 \label{tab:step3_example_3c}
 \end{table}
+Step 3(c) returns $\mathrm{DIF}^{(3c)}(X_1)=\{Y_1\}$ and $\mathrm{DIF}^{(3c)}(X_2)=\{Y_5\}$.
 
-Thus Step 3(c) returns
-\[
-DIF^{(3c)}(X_1)=\{Y_1\}, \qquad
-DIF^{(3c)}(X_2)=\{Y_5\}.
-\]
+\end{example}
+\end{mybox3}
 
-Finally, we combine the results from Step 3(b) and Step 3(c). An item-covariate
-pair is retained as genuine DIF only if it survives both procedures.
+\begin{mybox3}
+\begin{example}\label{ex:step3b-and-c} \textbf{Combining 3(b) and 3(c).} An item-covariate pair is retained as genuine DIF only if it survives both procedures.
 
 \begin{table}[H]
 \centering
@@ -432,10 +421,7 @@ Retained covariates are treated as evidence of criterion validity and included i
 
 \subsection{Step 5: Graph construction}
 
-We now construct the initial GLLRM by collecting the outputs of Steps 3 and 4 into the corresponding graph, item response theory (IRT) graph, and moralized marginal graph.
-
-\paragraph{\textit{Step 5 in practice}}
-No new tests are performed in Step 5. We report the structure implied by the retained LD and DIF edges and the covariates satisfying criterion validity. The GLLRM graph records the nodes and the connections beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. To construct the moralized marginal graph, we connect nodes that are parents of the same node, a process known as ``marrying parents''. We then replace the latent trait with a score node and add undirected score-to-item and item-to-item edges.
+An initial graph is created by collecting outputs from steps 3 and 4. No new tests are performed. The graph records the nodes and the connections beyond the item--latent-trait edges. The IRT graph has the same nodes and edges, with measurement, score-association, and DIF edges directed and LD edges undirected. To construct the moralized marginal graph, we connect nodes that are parents of the same node, a process known as ``marrying parents''. We then replace the latent trait with a score node and add undirected score-to-item and item-to-item edges.
 
 
 \subsection{Step 6: Tests of global Markov properties}
