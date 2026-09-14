@@ -570,7 +570,7 @@ $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_4}^c},X_1$ & $0.33$ & not supported \\
 
 \section{Results}
 
-We apply the screening procedure to data from $99$ respondents who completed the $10$-item Actinic Keratosis Quality of Life (AKQoL) questionnaire ($Q1$--$Q10$, each scored $0$--$3$). Two covariates were also recorded: sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ respondents have complete item and covariate data.
+We apply the screening procedure to data from $99$ respondents who completed the $10$ item version of Actinic Keratosis Quality of Life (AKQoL) questionnaire \cite{Esmann-2013}. Items $Q1$--$Q10$, each scored $0$--$3$ along with two covariates were also recorded: sex (\texttt{woman}, $1=$ woman) and age (\texttt{Alder}, in years). All $99$ respondents have complete item and covariate data.
 
 \subsection{Step 1}
 All items pass M2: each is positively associated with its rest-score, with the smallest association observed for $Q9$ ($\gamma=0.078$). Both M1 and M3 flag $Q9$. M1 fails because the association between $Q5$ and $Q9$ is negative ($\gamma=-0.168$); all other $\binom{10}{2}-1$ item pairs have non-negative associations. For M3, age passes because its associations with the score and all items are consistently negative (score $\gamma=-0.164$). Sex fails because its association with $Q9$ ($\gamma=-0.121$) has the opposite sign to its association with the score ($\gamma=0.338$). Its associations with all other items have the same sign as its association with the score. Because the inconsistencies in M1 and M3 are confined to $Q9$, we proceed to Step 2.
@@ -675,7 +675,7 @@ $Q3$ & $Q10$ & local dependence \\
 $Q5$ & $Q6$ & local dependence \\
 \bottomrule
 \end{tabular}
-\caption{Step 5 IRT graph edges (\texttt{build\_gllrm\_graph} / \texttt{build\_irt\_graph}).}
+\caption{Step 5 graph edges.}
 \label{tab:ak_step5}
 \end{table}
 
