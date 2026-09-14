@@ -189,7 +189,7 @@ P(\mathbf{Y}=\mathbf{y}\mid \Theta=\theta,\mathbf{X}=\mathbf{x}) = \exp\Big(\alp
 where
 \begin{align}
 \label{eq:interactions}
-(\star)=\sum_{i=1}^{k}\sum_{j>i}L_{ij}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}\delta_{il}y_ix_l
+(\star)=\sum_{i=1}^{k}\sum_{j>i}L_{ij}\lambda_{ij}y_iy_j+ \sum_{i=1}^{k}\sum_{l=1}^{m}D_{il}\delta_{il}y_ix_l
 \end{align}
 where $\lambda_{ij}$ is an interaction coefficient indicator of LD for item pair $(i,j)$ and $\delta_{il}$ is an indicator of DIF for item $Y_i$ with respect to covariate $X_l$. Equation~\eqref{eq:also-sufficient} shows that $S$ is also sufficient for $\theta$ in this more general model.
 
@@ -331,11 +331,11 @@ From this $\mathrm{SOURCE}(Y_1)=\{X_1,X_2\}$, $\mathrm{SOURCE}(Y_3)=\{X_1\}$, $\
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c c c}
+\begin{tabular}{c c c c r l}
 \hline
 Iteration & Item & Candidate source & Hypothesis & $p$-value & 3(b) decision  \\
 \hline
-1 & $Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S, X_2$ & $0.06$ & Retain \\
+1 & $Y_1$ & $X_1$ & $Y_1 \perp X_1 \mid S, X_2$ & $0.060$ & Retain \\
   & $Y_1$ & $X_2$ & $Y_1 \perp X_2 \mid S,X_1$ & $0.210$ & Remove \\
   & $Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S$ & $0.018$ & Retain \\
   & $Y_5$ & $X_2$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain \\
@@ -357,13 +357,13 @@ Step 3(c) tests, for each covariate $X_l$, whether each candidate DIF item remai
 
 \begin{table}[H]
 \centering
-\begin{tabular}{c c c c c c}
+\begin{tabular}{c c c c r l}
 \hline
 Iteration & Covariate & Candidate item & Hypothesis & $p$-value & 3(c) decision \\
 \hline
-1 & $X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S,Y_3$ & $0.09$ & Retain \\
+1 & $X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S,Y_3$ & $0.090$ & Retain \\
   & $X_1$ & $Y_3$ & $Y_3 \perp X_1 \mid S,Y_1$ & $0.160$ & Remove \\
-  & $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S,Y_1$ & $0.2$ & Retain \\
+  & $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S,Y_1$ & $0.200$ & Retain \\
   & $X_2$ & $Y_1$ & $Y_1 \perp X_2 \mid S,Y_5$ & $0.280$ & Remove \\
 2 & $X_1$ & $Y_1$ & $Y_1 \perp X_1 \mid S$ & $0.004$ & Retain \\
   & $X_2$ & $Y_5$ & $Y_5 \perp X_2 \mid S$ & $0.001$ & Retain \\
@@ -427,32 +427,32 @@ An initial graph is created by collecting outputs from steps 3 and 4. No new tes
 \subsection{Step 6: Tests of global Markov properties}
 Before reporting an initial model, we retest the DIF and LD relations retained from Step 5 against the full structure, to check they are not artifacts of the simpler conditioning sets used earlier. For DIF, this is the test
 \begin{align}
-    H_0^{C5}: Y_i \perp X_j
-    \mid
-    S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
-    \operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
+H_0^{C5}: Y_i \perp X_j
+\mid
+S,\ \operatorname{DIF}(X_j)\setminus\{Y_i\},\
+\operatorname{SOURCE}(Y_i)\setminus\{X_j\}. \label{C5}
 \end{align}
 For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identify the remaining LD component containing each item. For each component, we form a subscore from the items outside it and identify the DIF sources associated with its member items. We then test the item pair in both directions, conditioning on the corresponding complementary subscore and DIF sources ($C7$ and $C9$; \citealp{kreiner-christensen-2011}). The edge is retained if at least one direction is significant.
 
 \begin{mybox3}
-    \begin{example}
-        Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(Y_1,Y_2), (Y_3,Y_4), (Y_1,Y_4)$, and finally $X_1$ is related to the score $S$. Step 6 now retests the DIF using \eqref{C5}.
-        \begin{table}[H]
-        \centering
-        \begin{tabular}{c c c c c}
-            \hline
-            Item & Candidate source & Hypothesis & $p$-value & Decision \\
-            \hline
-            $Y_2$ & $X_1$ & $Y_2 \perp X_1 \mid S, Y_3,X_2$ & $0.016$ & Retain\\
-            $Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S,Y_2$ & $0.210$ & Remove\\
-            $Y_2$ & $X_2$ & $Y_2 \perp X_2 \mid S,X_1$ & $0.04$ & Retain \\
-            \hline
-            \end{tabular}
-            \caption{Hypothetical tests to determine if DIF edges should be retained.}
-            \label{tab:step6_dif_example}
-        \end{table}
-        Next we check whether the LD edges should be retained: take the pair $(Y_1,Y_2)$, cut their edge, and consider the LD connections still available from each item.
-        % Temporary removal of LD edge (Y_1,Y_2)
+\begin{example}
+Assume we have a dataset with four items $Y_1,Y_2,Y_3,Y_4$ and two exogenous covariates $X_1,X_2$. Suppose within the dataset there exists DIF between the following pairs $(Y_2,X_1), (Y_3,X_1), (Y_2,X_2),$ LD between $(Y_1,Y_2), (Y_3,Y_4), (Y_1,Y_4)$, and finally $X_1$ is related to the score $S$. Step 6 now retests the DIF using \eqref{C5}.
+\begin{table}[H]
+\centering
+\begin{tabular}{c c c c c}
+\hline
+Item & Candidate source & Hypothesis & $p$-value & Decision \\
+\hline
+$Y_2$ & $X_1$ & $Y_2 \perp X_1 \mid S, Y_3,X_2$ & $0.016$ & Retain\\
+$Y_3$ & $X_1$ & $Y_3 \perp X_1 \mid S,Y_2$ & $0.210$ & Remove\\
+$Y_2$ & $X_2$ & $Y_2 \perp X_2 \mid S,X_1$ & $0.04$ & Retain \\
+\hline
+\end{tabular}
+\caption{Hypothetical tests to determine if DIF edges should be retained.}
+\label{tab:step6_dif_example}
+\end{table}
+Next we check whether the LD edges should be retained: take the pair $(Y_1,Y_2)$, cut their edge, and consider the LD connections still available from each item.
+% Temporary removal of LD edge (Y_1,Y_2)
 \begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
 \node[nodecircle] (B) {$Y_2$};
@@ -491,47 +491,46 @@ For each genuine LD pair $(Y_a,Y_b)$, we temporarily remove its edge and identif
 {\small Temporarily testing LD edge $(Y_1,Y_2)$.};
 \end{tikzpicture}
 \end{center}
-\coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.\\
-\textcolor{blue}{notation fixed by STK; it should ofc be "$\text{SOURCE}(C_A)$" and "$\text{SOURCE}(C_B)$"}}%
+
+%\coauthortodo{\textbf{Set notation.} Earlier, $DIF(X)$ denotes items. Here, $DIF(C_A)$ and $DIF(C_B)$ mean covariate sources. Please define the notation for sources associated with item sets.\\ \textcolor{blue}{notation fixed by STK; it should ofc be "$\text{SOURCE}(C_A)$" and "$\text{SOURCE}(C_B)$"}}%
+
 The graph shows that the remaining LD components are
-        \begin{equation}
-            C_{Y_1}=\{Y_1,Y_4,Y_3\},\qquad C_{Y_2}=\{Y_2\}.
-        \end{equation}
-        The complements of $C_{Y_1}$ and $C_{Y_2}$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_{Y_1}^c}$ and $S_{C_{Y_2}^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X_1$ for $C_{Y_1}$, and $X_1$ and $X_2$ for $C_{Y_2}$. The two hypotheses are
-        \begin{align*}
-            C7:\ Y_1\bot Y_2\mid S_{C_{Y_1}^c},\text{SOURCE}(C_{Y_1}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_1}^c},X_1,
-        \end{align*}
-        and
-        \begin{equation*}
-            C9:\ Y_1\bot Y_2\mid S_{C_{Y_2}^c},\text{SOURCE}(C_{Y_2}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_2}^c},X_2,X_1.
-        \end{equation*}
-    Doing this for all LD edges, suppose we observe the following table of tests
-    \coauthortodo{\textbf{Degenerate tests.} Removing A--B gives $S_{C_A^c}=B$; removing C--D gives $S_{C_D^c}=C$. These tests condition on a tested item, so partial $\gamma$ is undefined. Please check $p=0.016$ and $0.03$. \\
-    \textcolor{blue}{Changes accepted an implemented by STK, cf the reason given in mail sent 13/09}}%
-    \begin{table}[H]
-     \centering
-    \begin{tabular}{c c c c}
-            \hline
-            LD pair & Hypothesis & $p$-value & Decision \\
-            \hline
-            $(Y_1,Y_2)$ & $Y_2 \bot Y_1 \mid S_{C_{Y_1}^c},X_1$ & NA & not supported/undefined \\
-            $(Y_1,Y_2)$ & $Y_2 \perp Y_1 \mid S_{C_{Y_2}^c},X_1,X_2$ & $0.510$ & not supported\\
-            $(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_3}^c},X_1$ & $0.02$ & supported \\
-            $(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_4}^c},X_1,X_2$ & NA & not supported/undefined \\
-            $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_1}^c},X_1,X_2$ & $0.2$ & not supported \\
-            $(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_4}^c},X_1$ & $0.33$ & not supported \\
-            \hline  
-            \end{tabular}
-            \caption{Hypothetical tests to determine if LD edges should be retained.}
-            \label{tab:step6_ld_example}
-        \end{table}
-    \coauthortodo{\textbf{Step 6.} Please check the paragraph and final graph
-    against the table. The stated rule and $p$-values imply keeping $(A,B)$
-    and $(C,D)$, and removing $(A,D)$. The paragraph and graph reverse the
-    latter two decisions.\\
-    \textcolor{blue}{Changes made by STK: updated graph to be in accordance with the stated rule and p-values from the hypothetical table 6}}%
-    Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(Y_1,Y_2)$ and $(Y_1,Y_4)$ should be dropped, while the edge between $(Y_3,Y_4)$ is kept. Thus, we are left with the final Step 6 graph below.
-    \begin{center}
+\begin{equation}
+    C_{Y_1}=\{Y_1,Y_4,Y_3\},\qquad C_{Y_2}=\{Y_2\}.
+\end{equation}
+The complements of $C_{Y_1}$ and $C_{Y_2}$ are taken within the full item set. Summing the responses to the items in each complement gives the subscores $S_{C_{Y_1}^c}$ and $S_{C_{Y_2}^c}$. Each test also conditions on the DIF sources associated with the items in the corresponding LD component: $X_1$ for $C_{Y_1}$, and $X_1$ and $X_2$ for $C_{Y_2}$. The two hypotheses are
+\begin{align*}
+    C7:\ Y_1\bot Y_2\mid S_{C_{Y_1}^c},\text{SOURCE}(C_{Y_1}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_1}^c},X_1,
+\end{align*}
+and
+\begin{equation*}
+    C9:\ Y_1\bot Y_2\mid S_{C_{Y_2}^c},\text{SOURCE}(C_{Y_2}) \quad = \quad Y_1\bot Y_2\mid S_{C_{Y_2}^c},X_2,X_1.
+\end{equation*}
+Doing this for all LD edges, suppose we observe the following table of tests
+
+% \coauthortodo{\textbf{Degenerate tests.} Removing A--B gives $S_{C_A^c}=B$; removing C--D gives $S_{C_D^c}=C$. These tests condition on a tested item, so partial $\gamma$ is undefined. Please check $p=0.016$ and $0.03$. \\ \textcolor{blue}{Changes accepted an implemented by STK, cf the reason given in mail sent 13/09}}%
+
+\begin{table}[H]
+\centering
+\begin{tabular}{c c c c}
+\hline
+LD pair & Hypothesis & $p$-value & Decision \\
+\hline
+$(Y_1,Y_2)$ & $Y_2 \bot Y_1 \mid S_{C_{Y_1}^c},X_1$ & NA & not supported/undefined \\
+$(Y_1,Y_2)$ & $Y_2 \perp Y_1 \mid S_{C_{Y_2}^c},X_1,X_2$ & $0.510$ & not supported\\
+$(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_3}^c},X_1$ & $0.02$ & supported \\
+$(Y_3,Y_4)$ & $Y_3 \perp Y_4 \mid S_{C_{Y_4}^c},X_1,X_2$ & NA & not supported/undefined \\
+$(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_1}^c},X_1,X_2$ & $0.2$ & not supported \\
+$(Y_1,Y_4)$ & $Y_1 \perp Y_4 \mid S_{C_{Y_4}^c},X_1$ & $0.33$ & not supported \\
+\hline  
+\end{tabular}
+\caption{Hypothetical tests to determine if LD edges should be retained.}
+\label{tab:step6_ld_example}
+\end{table}
+
+% \coauthortodo{\textbf{Step 6.} Please check the paragraph and final graph against the table. The stated rule and $p$-values imply keeping $(A,B)$ and $(C,D)$, and removing $(A,D)$. The paragraph and graph reverse the latter two decisions.\\ \textcolor{blue}{Changes made by STK: updated graph to be in accordance with the stated rule and p-values from the hypothetical table 6}}% Since an LD edge is removed if and only if the pair fails to achieve a significant $p$-value for both Step 6 LD tests, we conclude the two LD edges $(Y_1,Y_2)$ and $(Y_1,Y_4)$ should be dropped, while the edge between $(Y_3,Y_4)$ is kept. Thus, we are left with the final Step 6 graph below.
+
+\begin{center}
 \begin{tikzpicture}[node distance=0.9cm and 2.3cm]
 \node[nodecircle] (B) {$Y_2$};
 \node[nodecircle,below=of B, xshift=-2cm] (A) {$Y_1$};
@@ -578,8 +577,9 @@ All items pass M2: each is positively associated with its rest-score, with the s
 
 \subsection{Step 2}
 Controlling the false discovery rate (FDR) with Benjamini--Hochberg, the initial screen flags two DIF relations and four candidate LD pairs.
-\coauthortodo{\textbf{DIF threshold.} Q4--Alder has $p_{\mathrm{adj}}=0.062>0.05$, yet is counted and carried forward as an initial DIF candidate. Please reconcile the BH adjustment family, decision threshold, and table with the stated 5\% criterion. \\
-\textcolor{blue}{The output of twigg::screen\_DIF() contains 3 p-value columns. Raw, iarm::partgam\_DIF's adjusted p-value and "your.adjusted.p" which twigg computes itself. The one reported here "$p_{adj}$" is iarm::partgam\_DIF's adjusted p-value, which computes it without ranking the p-values. However twigg takes all the raw p-values, ranks them and then computes the adjusted p-value. So the p-value included here should probably be the "your.adjusted.p" since this is the p-value twigg uses to determine significance. - i have changed the p-values in the from the "padj.BH" values to the "your.adjusted.p" values, and the "." to a "*" for Q4-Alder}}%
+
+% \coauthortodo{\textbf{DIF threshold.} Q4--Alder has $p_{\mathrm{adj}}=0.062>0.05$, yet is counted and carried forward as an initial DIF candidate. Please reconcile the BH adjustment family, decision threshold, and table with the stated 5\% criterion. \\ \textcolor{blue}{The output of twigg::screen\_DIF() contains 3 p-value columns. Raw, iarm::partgam\_DIF's adjusted p-value and "your.adjusted.p" which twigg computes itself. The one reported here "$p_{adj}$" is iarm::partgam\_DIF's adjusted p-value, which computes it without ranking the p-values. However twigg takes all the raw p-values, ranks them and then computes the adjusted p-value. So the p-value included here should probably be the "your.adjusted.p" since this is the p-value twigg uses to determine significance. - i have changed the p-values in the from the "padj.BH" values to the "your.adjusted.p" values, and the "." to a "*" for Q4-Alder}}%
+
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llcccc@{}}
@@ -681,31 +681,35 @@ $Q5$ & $Q6$ & local dependence \\
 \end{table}
 
 \subsection{Step 6}
-\coauthortodo{\textbf{Repeated DIF tests.} With one item per source and one source per item, $C5$ again conditions only on $S$. Why do the same $\gamma$s now have $p=0.051,0.032$ rather than $0.0031,0.0008$? Please state any change in data, test, or adjustment.\\
-\textcolor{blue}{p-values changed by STK, cf explanation in email sent 13/9. Feel free to re-run the code yourself with the updated step6\_check\_gllrm function in twigg (i have already done so and it produces the correct p-values when p\_value\_method is set to "asymptotic".}}%
+
+% \coauthortodo{\textbf{Repeated DIF tests.} With one item per source and one source per item, $C5$ again conditions only on $S$. Why do the same $\gamma$s now have $p=0.051,0.032$ rather than $0.0031,0.0008$? Please state any change in data, test, or adjustment.\\ \textcolor{blue}{p-values changed by STK, cf explanation in email sent 13/9. Feel free to re-run the code yourself with the updated step6\_check\_gllrm function in twigg (I have already done so and it produces the correct p-values when p\_value\_method is set to "asymptotic".}}%
+
 The retained DIF and LD edges are retested under the conditioning sets implied by the Step 5 graph. For DIF this is the $C5$ hypothesis of \eqref{C5}; for each LD pair the two $C7$/$C9$ hypotheses are tested, with an edge kept if at least one is significant.
+
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}llccl@{}}
 \toprule
 Edge & Hypothesis & partial $\gamma$ & $p$ & Decision \\
 \midrule
-Alder $\to Q4$ & $C5$ & $0.383$ & $0.0031$ & Removed \\
+Alder $\to Q4$ & $C5$ & $0.383$ & $0.0031$ & Retained \\
 woman $\to Q5$ & $C5$ & $0.727$ & $0.0008$ & Retained \\
 \bottomrule
 \end{tabular}
 \caption{Step 6 retesting of the Step 5 DIF edges (\texttt{step6\_check\_gllrm}).}
 \label{tab:ak_step6_dif}
 \end{table}
-\coauthortodo{\textbf{(STK) monte carlo p-values}. These p-values are produced via the monte carlo method since i just now implemented the opportunity to change it.. Should they be changed for consistency and reproducibility purposes?}
+
+% \coauthortodo{\textbf{(STK) monte carlo p-values}. These p-values are produced via the monte carlo method since i just now implemented the opportunity to change it.. Should they be changed for consistency and reproducibility purposes?}
+
 \begin{table}[H]
 \centering
 \begin{tabular}{@{}lccccl@{}}
 \toprule
 Edge & $C7$: $\gamma$ & $C7$: $p$ & $C9$: $\gamma$ & $C9$: $p$ & Decision \\
 \midrule
-$Q3$--$Q10$ & $-0.611$ & $0.0085$ & $-0.755$ & $0.0002$ & Retained \\
-$Q5$--$Q6$  & $0.765$  & $0.017$  & $0.362$  & $0.275$  & Retained \\
+$Q3$--$Q10$ & $-0.611$ & $0.0019$ & $-0.755$ & $<0.0001$ & Retained \\
+$Q5$--$Q6$  & $0.765$  & $0.0002$  & $0.362$  & $0.142$  & Retained \\
 \bottomrule
 \end{tabular}
 \caption{Step 6 retesting of the Step 5 LD edges. An edge is retained if at least one of $C7$/$C9$ is significant.}
