@@ -719,14 +719,14 @@ The DIF edge Alder$\,\to Q4$ fails its $C5$ test ($p=0.051$) and is removed, alo
 
 
 \section{Discussion}
-\coauthortodo{\textbf{Subscore count.} Excluding the empty subset would give $2^{k-1}-1$. Please check the count in this paragraph.\\
-\textcolor{blue}{Change accepted and implemented by STK. Andreas' comment is correct.}}%
+
+% \coauthortodo{\textbf{Subscore count.} Excluding the empty subset would give $2^{k-1}-1$. Please check the count in this paragraph.\\ \textcolor{blue}{Change accepted and implemented by STK. Andreas' comment is correct.}}%
+
 The implementation of M2 checks associations between items and their corresponding rest-scores. M3 examines associations between covariates and the total score and checks their direction against the item--covariate associations. These screening checks do not exhaustively evaluate all possible subscores. This keeps the procedure computationally feasible because the number of candidate subscores grows exponentially with the number of items. For $k$ items, the number of subscores excluding the item under examination and the zero subscore is $2^{k-1}-1$.
 
 In Step 3(a), the inclusion algorithm prioritizes pairs with two significant directional LD tests over pairs with only one. Within each group, pairs are ranked by the absolute value of the weighted partial gamma coefficient, allowing both positive and negative associations to be selected. This ordering defines the algorithm's screening priorities. As directional tests are removed from consideration, a pair can move from the group with two significant tests to the group with one. The weighted coefficient accounts for the number of comparable pairs contributing to each directional estimate, rather than assigning equal weight to both estimates through an arithmetic mean.
 
 A negative partial gamma indicates that higher scores on one item tend to be associated with lower scores on the other, conditional on the variables used in the test. One possible explanation is that the items assess different methods or dimensions \citep{kreiner-christensen-2004}. Such a pattern warrants consideration of whether the questionnaire should be analyzed as a single scale or as separate subscales.
-
 
 Two decisions are central to DIF screening. First, Steps 3(b) and 3(c) are complementary: a final decision is made only after both procedures have been completed and their results compared. A DIF edge is retained only if it survives both steps. This conservative rule reduces the risk of retaining spurious DIF, at the cost of potentially removing weaker genuine relationships. The procedure starts with a broad set of candidate LD and DIF relations in Step 2 and progressively reduces that set, with retained edges tested again in Step 6. Second, the calculation of $p$-values requires a choice of method. We use asymptotic $p$-values throughout. These are fast to compute but may be less reliable when contingency tables are sparse and the conditioning strata contain few observations.
 
@@ -736,13 +736,13 @@ Steps 5 and 6 report graph structures without drawing them. They return the node
 \bibliography{reference}
 
 \newpage
+
 \begin{appendices}
 \section{}\label{sec:AppGeneral}
 \input{Appendix - general item response model}
 \end{appendices}
 
 \begin{appendices}
-
 \section{Association measures}\label{sec:App-gamma}
 %\input{appendix}
 \input{Appendix - association measures}
@@ -756,11 +756,6 @@ Steps 5 and 6 report graph structures without drawing them. They return the node
 \begin{appendices}
 \section{}\label{sec:AppAlgorithms}
 \input{Appendix - algorithms}
-\end{appendices}
-
-\begin{appendices}
-\section{}\label{sec:AppSPADI}
-\input{Appendix - data example}
 \end{appendices}
 
 
